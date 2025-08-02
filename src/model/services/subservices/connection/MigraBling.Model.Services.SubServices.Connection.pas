@@ -22,10 +22,13 @@ implementation
 { TConnection }
 
 class function TConnection.getSQLiteConnection: IConexao;
+var
+  dbDir: string;
 begin
+  dbDir := getAppDir + 'db\';
   result := TConexaoFactory.New.GetConexao;
   result.BaseConectada := 'SQLite';
-  result.Params.Add('Database=' + getAppDir + 'db\db.db');
+  result.Params.Add('Database=' + dbDir+ 'db.db');
   result.Params.Add('LockingMode=Normal');
   result.Params.Add('DriverID=SQLite');
   result.Params.Add('Synchronous=Normal');
@@ -34,9 +37,9 @@ begin
   result.Params.Add('BusyTimeout=30000');
   result.Params.Add('TempStore=Memory');
 
-  if not FileExists(getAppDir + 'db\db.db') then
+  if not FileExists(dbDir+'db.db') then
   begin
-    ForceDirectories(getAppDir);
+    ForceDirectories(dbDir);
     TCriadorBD.CriarBancoDeDados(result);
   end
   else
