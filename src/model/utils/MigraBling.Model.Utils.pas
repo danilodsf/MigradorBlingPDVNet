@@ -13,6 +13,7 @@ function RemoverAcentos(const Texto: string): string;
 function getDataSQLite(AValue: string): TDateTime;
 function setDataSQLite(AValue: TDateTime): string;
 function TextoParaHTML(const ATexto: string): string;
+function GetEnv(const AName: string): string;
 
 implementation
 
@@ -78,8 +79,13 @@ end;
 
 function TextoParaHTML(const ATexto: string): string;
 begin
-  Result := StringReplace(ATexto, sLineBreak, '<br/>', [rfReplaceAll]);
-  Result := StringReplace(Result, #10, '<br/>', [rfReplaceAll]);
+  result := StringReplace(ATexto, sLineBreak, '<br/>', [rfReplaceAll]);
+  result := StringReplace(result, #10, '<br/>', [rfReplaceAll]);
+end;
+
+function GetEnv(const AName: string): string;
+begin
+  result := GetEnvironmentVariable(AName);
 end;
 
 end.

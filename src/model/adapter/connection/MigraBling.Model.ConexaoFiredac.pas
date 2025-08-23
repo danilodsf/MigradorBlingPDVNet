@@ -105,6 +105,9 @@ begin
   begin
     ForceDirectories(ExtractFilePath(ACaminhoBackup));
 
+    if FileExists(ACaminhoBackup) then
+      DeleteFile(ACaminhoBackup);
+
     if not FileExists(ACaminhoBackup) then
     begin
       DriverLink := TFDPhysSQLiteDriverLink.Create(nil);

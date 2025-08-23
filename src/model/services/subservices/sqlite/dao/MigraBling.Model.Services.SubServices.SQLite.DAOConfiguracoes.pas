@@ -126,9 +126,9 @@ begin
     Result.PDVNET_UserName := LQuery.FieldByName('PDVNET_USERNAME').AsString;
     Result.PDVNET_Password := LQuery.FieldByName('PDVNET_PASSWORD').AsString;
 {$IFDEF DEBUG}
-    Result.PDVNET_Server := '192.168.88.250';
-    Result.PDVNET_UserName := 'sa';
-    Result.PDVNET_Password := 'REMOVIDO';
+    Result.PDVNET_Server := GetEnv('PDVNET_SERVER');
+    Result.PDVNET_UserName := GetEnv('PDVNET_USER');
+    Result.PDVNET_Password := GetEnv('PDVNET_PASS');
 {$ENDIF}
     Result.TempoSincronizacao := LQuery.FieldByName('TEMPO_SINRONIZACAO').AsInteger;
     Result.Ativar := LQuery.FieldByName('ATIVAR').AsInteger = 1;
