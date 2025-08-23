@@ -16,6 +16,7 @@ uses
   MigraBling.Model.Services.SubServices.PDVNET.RegistrosMovimentados,
   MigraBling.Model.Services.SubServices.Connection,
   MigraBling.Model.LogObserver,
+  MigraBling.Model.ConexaoProvider,
   MigraBling.Model.Utils,
   MigraBling.Model.TabelaDados;
 
@@ -180,7 +181,7 @@ begin
   LConfiguracoes := FConfigurador.Configuracoes.Ler(0);
   try
     try
-      LConexao := TConexaoFactory.New.GetConexao;
+      LConexao := TConexaoFactory.New.GetConexao({$IFDEF USE_FD_MSSQL}dpFD{$ELSE}dpADO{$ENDIF});
       LConexao.BaseConectada := 'PDVNET';
       LConexao.Params.Add('Server=' + LConfiguracoes.PDVNET_Server);
       LConexao.Params.Add('OSAuthent=No');

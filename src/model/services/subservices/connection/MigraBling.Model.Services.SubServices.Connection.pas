@@ -7,6 +7,7 @@ uses
   MigraBling.Model.Interfaces.Conexao,
   MigraBling.Model.Utils,
   MigraBling.Model.Configuracao,
+  MigraBling.Model.ConexaoProvider,
   MigraBling.Model.Services.SubServices.SQLite.CriadorBD,
   System.SysUtils;
 
@@ -26,7 +27,7 @@ var
   dbDir: string;
 begin
   dbDir := getAppDir + 'db\';
-  result := TConexaoFactory.New.GetConexao;
+  result := TConexaoFactory.New.GetConexao(dpFD);
   result.BaseConectada := 'SQLite';
   result.Params.Add('Database=' + dbDir+ 'db.db');
   result.Params.Add('LockingMode=Normal');
@@ -48,7 +49,7 @@ end;
 
 class function TConnection.getSQLServerConnection(AConfigurcao: TConfiguracao): IConexao;
 begin
-  result := TConexaoFactory.New.GetConexao;
+  result := TConexaoFactory.New.GetConexao({$IFDEF USE_FD_MSSQL}dpFD{$ELSE}dpADO{$ENDIF});
   result.BaseConectada := 'PDVNET';
   result.Params.Add('Server=' + AConfigurcao.PDVNET_Server);
   result.Params.Add('OSAuthent=No');

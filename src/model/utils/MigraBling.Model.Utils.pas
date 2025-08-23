@@ -12,6 +12,7 @@ function IfThen(ACondition: Boolean; ATrueValue: Variant; AFalseValue: Variant):
 function RemoverAcentos(const Texto: string): string;
 function getDataSQLite(AValue: string): TDateTime;
 function setDataSQLite(AValue: TDateTime): string;
+function TextoParaHTML(const ATexto: string): string;
 
 implementation
 
@@ -73,6 +74,12 @@ end;
 function setDataSQLite(AValue: TDateTime): string;
 begin
   result := FormatDateTime('yyyy-mm-dd hh:nn:ss', AValue);
+end;
+
+function TextoParaHTML(const ATexto: string): string;
+begin
+  Result := StringReplace(ATexto, sLineBreak, '<br/>', [rfReplaceAll]);
+  Result := StringReplace(Result, #10, '<br/>', [rfReplaceAll]);
 end;
 
 end.

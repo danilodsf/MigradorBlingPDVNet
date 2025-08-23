@@ -34,6 +34,18 @@ var
   LQuery: IQuery;
 begin
   LQuery := TQueryFactory.New.GetQuery(FConexao.Clone);
+
+  LQuery.SQL.Text := 'SELECT 1 FROM CONFIGURACOES';
+  LQuery.Open;
+
+  if LQuery.IsEmpty then
+  begin
+    Criar(AObj);
+    exit;
+  end;
+
+  LQuery.Close;
+  LQuery.SQL.Clear;
   LQuery.SQL.Text := 'UPDATE CONFIGURACOES SET ACCESS_TOKEN = :PACCESS_TOKEN ' +
     '   ,REFRESH_TOKEN = :PREFRESH_TOKEN, EXPIRES_IN = :PEXPIRES_IN ' +
     '   ,CLIENT_ID = :PCLIENT_ID, CLIENT_SECRET = :PCLIENT_SECRET ' +
