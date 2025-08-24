@@ -41,7 +41,7 @@ Projeto em Delphi para realizar a **sincronização de produtos, estoques e vari
 
 ## 🔐 Segurança
 
-- Variáveis sensíveis, como **credenciais de conexão** e **chaves da API**, são obtidas via **variáveis de ambiente**.  
+- Variáveis sensíveis, como **credenciais de conexão**, são obtidas via **variáveis de ambiente**.  
 - Tokens OAuth são armazenados de forma segura e atualizados automaticamente.  
 - Mutex para impedir múltiplas instâncias do processo.  
 - Backup diário da base SQLite feito em **thread separada**.
