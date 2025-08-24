@@ -4,7 +4,7 @@
         <ProjectVersion>20.3</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <ProjectName Condition="'$(ProjectName)'==''">MigraBling</ProjectName>
         <TargetedPlatforms>3</TargetedPlatforms>
@@ -136,9 +136,9 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=SplitFashion;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.30;InternalName=Migrador PDVNet Bling;LegalCopyright=;LegalTrademarks=;OriginalFilename=Migrador PDVNet Bling;ProgramID=$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=SplitFashion;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.47;InternalName=Migrador PDVNet Bling;LegalCopyright=;LegalTrademarks=;OriginalFilename=Migrador PDVNet Bling;ProgramID=$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <Icon_MainIcon>assets\img\ico.ico</Icon_MainIcon>
-        <VerInfo_Build>30</VerInfo_Build>
+        <VerInfo_Build>47</VerInfo_Build>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">

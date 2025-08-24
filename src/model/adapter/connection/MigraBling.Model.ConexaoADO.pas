@@ -41,8 +41,10 @@ type
     function Clone: IConexao;
   end;
 
-
 implementation
+
+uses
+  System.SysUtils;
 
 { TConexaoADO }
 
@@ -50,7 +52,6 @@ function TConexaoADO.Clone: IConexao;
 begin
   Result := TConexaoADO.Create;
   Result.Params.Text := Self.Params.Text;
-//  TADOConnection(Result.Instance).ConnectionString := Self.Params.Text;
   Result.BaseConectada := Self.FBaseConectada;
 
   try
@@ -70,7 +71,7 @@ var
   hr: HResult;
 begin
   hr := CoInitializeEx(nil, COINIT_APARTMENTTHREADED);
-    FCoInitialized := hr = S_OK;
+  FCoInitialized := hr = S_OK;
 
   FConnection := TADOConnection.Create(nil);
   FConnection.LoginPrompt := False;
@@ -115,7 +116,7 @@ end;
 
 procedure TConexaoADO.Open;
 begin
-  Connected := True;
+  Connected := true;
 end;
 
 procedure TConexaoADO.Rollback;
@@ -132,20 +133,22 @@ procedure TConexaoADO.SetConnected(AValue: Boolean);
 var
   LConnStr, LServer, LDataBase, LUserName, LPassword: string;
 begin
-//  if FConnection.ConnectionString = '' then
-//  begin
-    LServer := FParams.Values['Server'];
-    LDataBase := FParams.Values['Database'];
-    LUsername := FParams.Values['User_Name'];
-    LPassword := FParams.Values['Password'];
+  LServer := FParams.Values['Server'];
+  LDataBase := FParams.Values['Database'];
+  LUserName := FParams.Values['User_Name'];
+  LPassword := FParams.Values['Password'];
 
-    LConnStr := 'Provider=MSOLEDBSQL;Password='+LPassword+';Persist Security Info=False;'+
-    'User ID='+LUserName+';Initial Catalog=BDMATRIZSPLIT;Data Source='+LServer+';Encrypt=Yes;'+
-    'TrustServerCertificate=Yes;MultipleActiveResultSets=True;';
+  LConnStr := 'Provider=MSOLEDBSQL19;PWD=' + LPassword +
+    ';UID=' + LUserName + ';Database=BDMATRIZSPLIT;Server=' + LServer +
+    ';Use Encryption for Data=Optional;MultipleActiveResultSets=True;';
 
-    FConnection.ConnectionString := LConnStr;
-//  end;
-  FConnection.Connected := AValue;
+  FConnection.ConnectionString := LConnStr;
+  try
+    FConnection.Connected := AValue;
+  except
+    on e: Exception do
+      raise Exception.Create(E.message + sLineBreak + FConnection.ConnectionString);
+  end;
 end;
 
 procedure TConexaoADO.SetDateTimeFormat(AValue: string);

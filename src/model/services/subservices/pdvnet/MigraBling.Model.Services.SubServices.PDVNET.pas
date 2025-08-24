@@ -3,6 +3,7 @@ unit MigraBling.Model.Services.SubServices.PDVNET;
 interface
 
 uses
+  System.Classes,
   System.Generics.Collections,
   MigraBling.Model.Services.SubServices.Interfaces.PDVNET,
   MigraBling.Model.Configuracao,
@@ -18,7 +19,7 @@ uses
   MigraBling.Model.LogObserver,
   MigraBling.Model.ConexaoProvider,
   MigraBling.Model.Utils,
-  MigraBling.Model.TabelaDados;
+  MigraBling.Model.TabelaDados, Vcl.Dialogs;
 
 type
   TPDVNETService = class(TInterfacedObject, IPDVNETService)
@@ -194,7 +195,11 @@ begin
       LConexao.Connected := true;
       Result := true;
     except
-      Result := false;
+      on E: Exception do
+      begin
+        ShowMessage(E.Message);
+        Result := false;
+      end;
     end;
   finally
     LConfiguracoes.Free;
