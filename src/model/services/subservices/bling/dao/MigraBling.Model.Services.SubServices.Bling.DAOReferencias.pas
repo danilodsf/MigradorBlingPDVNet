@@ -33,6 +33,7 @@ type
     function ObterJSONProduto(AObj: TReferencia; AExibirIDs: Boolean = false): TJSONObject;
     procedure AdicionarCampoCustomizado(AIDBling, ACampo, AVinculo, ADescricao: string;
       AJsonArray: TJSONArray; AExibirIDs: Boolean);
+    function LocalizarEAtualizarProduto(const AReferencia: string): string;
   public
     procedure Persistir(AListObj: TObjectList<TReferencia>);
     procedure ApagarTudo;
@@ -141,57 +142,57 @@ begin
     Result.AddPair('preco', 1000); // Preço não pode ficar em branco
   end;
 
-  Result.AddPair('descricaoCurta', AObj.Descricao);
-  Result.AddPair('descricaoComplementar', AObj.Descricao_Complementar);
+  Result.AddPair('descricaoCurta', TextoParaHTML(AObj.Descricao));
+  Result.AddPair('descricaoComplementar', TextoParaHTML(AObj.Descricao_Complementar));
   Result.AddPair('marca', 'Split Fashion'); { Criar configuração para não ficar fixo }
   Result.AddPair('unidade', AObj.Unidade);
   Result.AddPair('pesoLiquido', AObj.Peso);
   Result.AddPair('pesoBruto', AObj.Peso);
   Result.AddPair('tipoProducao', 'P'); { P - própria, T - terceiros }
   Result.AddPair('condicao', 1); { 0 - Não especificado, 1 - Novo, 2 - Usado, 3 - Recondicionado }
-  //Result.AddPair('categoria', TJSONObject.Create.AddPair('id', AObj.Categoria_ID_Bling));
+  // Result.AddPair('categoria', TJSONObject.Create.AddPair('id', AObj.Categoria_ID_Bling));
   Result.AddPair('tributacao', TJSONObject.Create.AddPair('origem', 0).AddPair('ncm', AObj.NCM));
   Result.AddPair('dimensoes', TJSONObject.Create.AddPair('largura', AObj.Largura).AddPair('altura',
     AObj.Altura).AddPair('profundidade', AObj.Profundidade).AddPair('unidadeMedida', 1));
 
-   AdicionarCampoCustomizado(AObj.Departamento_ID_Bling, AObj.Departamento_Campo,
-   AObj.Departamento_Vinculo, AObj.Departamento, JSONArrayCampos, false);
+  AdicionarCampoCustomizado(AObj.Departamento_ID_Bling, AObj.Departamento_Campo,
+    AObj.Departamento_Vinculo, AObj.Departamento, JSONArrayCampos, false);
 
-   AdicionarCampoCustomizado(AObj.Colecao_ID_Bling, AObj.Colecao_Campo, AObj.Colecao_Vinculo,
-   AObj.Colecao, JSONArrayCampos, false);
+  AdicionarCampoCustomizado(AObj.Colecao_ID_Bling, AObj.Colecao_Campo, AObj.Colecao_Vinculo,
+    AObj.Colecao, JSONArrayCampos, false);
 
-   AdicionarCampoCustomizado(AObj.Grupo_ID_Bling, AObj.Grupo_Campo, AObj.Grupo_Vinculo, AObj.Grupo,
-   JSONArrayCampos, false);
+  AdicionarCampoCustomizado(AObj.Grupo_ID_Bling, AObj.Grupo_Campo, AObj.Grupo_Vinculo, AObj.Grupo,
+    JSONArrayCampos, false);
 
-   AdicionarCampoCustomizado(AObj.Material_ID_Bling, AObj.Material_Campo, AObj.Material_Vinculo,
-   AObj.Material, JSONArrayCampos, false);
+  AdicionarCampoCustomizado(AObj.Material_ID_Bling, AObj.Material_Campo, AObj.Material_Vinculo,
+    AObj.Material, JSONArrayCampos, false);
 
-   AdicionarCampoCustomizado(AObj.Categoria_ID_Bling, AObj.Categoria_Campo, AObj.Categoria_Vinculo,
-   AObj.Categoria, JSONArrayCampos, false);
+  AdicionarCampoCustomizado(AObj.Categoria_ID_Bling, AObj.Categoria_Campo, AObj.Categoria_Vinculo,
+    AObj.Categoria, JSONArrayCampos, false);
 
-   AdicionarCampoCustomizado(AObj.Cor_ID_Bling, AObj.Cor_Campo, AObj.Cor_Vinculo, AObj.Cor,
-   JSONArrayCampos, false);
+  AdicionarCampoCustomizado(AObj.Cor_ID_Bling, AObj.Cor_Campo, AObj.Cor_Vinculo, AObj.Cor,
+    JSONArrayCampos, false);
 
-   AdicionarCampoCustomizado(AObj.Tamanho_ID_Bling, AObj.Tamanho_Campo, AObj.Tamanho_Vinculo,
-   AObj.Tamanho, JSONArrayCampos, false);
+  AdicionarCampoCustomizado(AObj.Tamanho_ID_Bling, AObj.Tamanho_Campo, AObj.Tamanho_Vinculo,
+    AObj.Tamanho, JSONArrayCampos, false);
 
   Result.AddPair('camposCustomizados', JSONArrayCampos);
 
-  // var
-  // Txt: TStrings;
-  //
-  // Txt := TStringList.Create;
-  // try
-  // try
-  // Txt.Text := Result.ToJSON;
-  // Txt.SaveToFile('json.json');
-  // except
-  // on E: Exception do
-  // raise Exception.Create(E.Message);
-  // end;
-  // finally
-  // Txt.Free;
-  // end;
+//  var
+//    Txt: TStrings;
+//
+//  Txt := TStringList.Create;
+//  try
+//    try
+//      Txt.Text := Result.ToJSON;
+//      Txt.SaveToFile('json.json');
+//    except
+//      on E: Exception do
+//        raise Exception.Create(E.Message);
+//    end;
+//  finally
+//    Txt.Free;
+//  end;
 
   if AObj.Variacoes.Count > 0 then
   begin
@@ -235,8 +236,8 @@ begin
         JSONBodyVariacao.AddPair('pesoLiquido', AObj.Peso);
         JSONBodyVariacao.AddPair('pesoBruto', AObj.Peso);
         JSONBodyVariacao.AddPair('tipoProducao', 'P'); { P - própria, T - terceiros }
-        //JSONBodyVariacao.AddPair('categoria', TJSONObject.Create.AddPair('id',
-        //  AObj.Categoria_ID_Bling));
+        // JSONBodyVariacao.AddPair('categoria', TJSONObject.Create.AddPair('id',
+        // AObj.Categoria_ID_Bling));
         JSONBodyVariacao.AddPair('tributacao', TJSONObject.Create.AddPair('origem', 0)
           .AddPair('ncm', AObj.NCM));
         JSONBodyVariacao.AddPair('dimensoes', TJSONObject.Create.AddPair('largura', AObj.Largura)
@@ -245,26 +246,26 @@ begin
 
         JSONArrayCamposVariacoes := TJSONArray.Create;
 
-         AdicionarCampoCustomizado(AObj.Departamento_ID_Bling, AObj.Departamento_Campo,
-         AObj.Departamento_Vinculo, AObj.Departamento, JSONArrayCamposVariacoes, false);
+        AdicionarCampoCustomizado(AObj.Departamento_ID_Bling, AObj.Departamento_Campo,
+          AObj.Departamento_Vinculo, AObj.Departamento, JSONArrayCamposVariacoes, false);
 
-         AdicionarCampoCustomizado(AObj.Colecao_ID_Bling, AObj.Colecao_Campo, AObj.Colecao_Vinculo,
-         AObj.Colecao, JSONArrayCamposVariacoes, false);
+        AdicionarCampoCustomizado(AObj.Colecao_ID_Bling, AObj.Colecao_Campo, AObj.Colecao_Vinculo,
+          AObj.Colecao, JSONArrayCamposVariacoes, false);
 
-         AdicionarCampoCustomizado(AObj.Grupo_ID_Bling, AObj.Grupo_Campo, AObj.Grupo_Vinculo,
-         AObj.Grupo, JSONArrayCamposVariacoes, false);
+        AdicionarCampoCustomizado(AObj.Grupo_ID_Bling, AObj.Grupo_Campo, AObj.Grupo_Vinculo,
+          AObj.Grupo, JSONArrayCamposVariacoes, false);
 
-         AdicionarCampoCustomizado(AObj.Material_ID_Bling, AObj.Material_Campo,
-         AObj.Material_Vinculo, AObj.Material, JSONArrayCamposVariacoes, false);
+        AdicionarCampoCustomizado(AObj.Material_ID_Bling, AObj.Material_Campo,
+          AObj.Material_Vinculo, AObj.Material, JSONArrayCamposVariacoes, false);
 
-         AdicionarCampoCustomizado(AObj.Categoria_ID_Bling, AObj.Categoria_Campo,
-         AObj.Categoria_Vinculo, AObj.Categoria, JSONArrayCamposVariacoes, false);
+        AdicionarCampoCustomizado(AObj.Categoria_ID_Bling, AObj.Categoria_Campo,
+          AObj.Categoria_Vinculo, AObj.Categoria, JSONArrayCamposVariacoes, false);
 
-         AdicionarCampoCustomizado(variacao.Cor_ID_Bling, AObj.Cor_Campo, variacao.Cor_Vinculo,
-         variacao.CorStr, JSONArrayCamposVariacoes, false);
+        AdicionarCampoCustomizado(variacao.Cor_ID_Bling, AObj.Cor_Campo, variacao.Cor_Vinculo,
+          variacao.CorStr, JSONArrayCamposVariacoes, false);
 
-         AdicionarCampoCustomizado(variacao.Tamanho_ID_Bling, AObj.Tamanho_Campo,
-         variacao.Tamanho_Vinculo, variacao.TamanhoStr, JSONArrayCamposVariacoes, false);
+        AdicionarCampoCustomizado(variacao.Tamanho_ID_Bling, AObj.Tamanho_Campo,
+          variacao.Tamanho_Vinculo, variacao.TamanhoStr, JSONArrayCamposVariacoes, false);
 
         JSONBodyVariacao.AddPair('camposCustomizados', JSONArrayCamposVariacoes);
 
@@ -298,11 +299,12 @@ end;
 procedure TDAOReferenciasBling.Criar(AObj: TReferencia);
 var
   Response: IResponse;
-  JSONLeitura, JSON, JSONBodyVariacao, JSONVariacoes, JSONCampo: TJSONObject;
+  JSONEnvio, JSONLeitura, JSON, JSONBodyVariacao, JSONVariacoes, JSONCampo: TJSONObject;
   JSONArrayCampos, JSONSaved: TJSONArray;
   errorResponse: TResponseError;
   variacao: TVariacao;
   I: Integer;
+  Referencia: string;
 begin
   if AObj.Inativo or AObj.Nome.IsEmpty or (not AObj.Exibir) or (AObj.Nome = 'EXCLUIR') then
   begin
@@ -313,9 +315,11 @@ begin
   errorResponse := nil;
   try
     try
+      JSONEnvio := ObterJSONProduto(AObj);
+      Referencia := JSONEnvio.GetValue<string>('codigo');
       Response := TRequest.New.BaseURL(C_BASEURL + C_PRODUTOS).Accept(C_ACCEPT)
         .ContentType(CONTENTTYPE_APPLICATION_JSON).TokenBearer(FAuth.AccessToken)
-        .AddBody(ObterJSONProduto(AObj)).OnAfterExecute(
+        .AddBody(JSONEnvio).OnAfterExecute(
         procedure(const Req: IRequest; const Res: IResponse)
         begin
           FAuth.AtualizarToken(Req, Res);
@@ -371,8 +375,16 @@ begin
       end;
 
       errorResponse := TJSON.JsonToObject<TResponseError>(Response.Content);
+
+      if errorResponse.AllErrors.Contains('já foi cadastrado para o produto') then
+      begin
+        AObj.ID_Bling := LocalizarEAtualizarProduto(Referencia);
+        if AObj.ID_Bling <> '' then
+          exit;
+      end;
+
       raise Exception.Create(errorResponse.error.Message + ' - ' + errorResponse.error.description +
-        ' - ' + 'Referências' + '. ' + errorResponse.allErrors);
+        ' - ' + 'Referências' + '. ' + errorResponse.AllErrors);
     except
       on E: Exception do
       begin
@@ -516,7 +528,7 @@ begin
       errorResponse := TJSON.JsonToObject<TResponseError>(Response.Content);
 
       raise Exception.Create(errorResponse.error.Message + ' - ' + errorResponse.error.description +
-        ' - ' + 'Referências' + '. ' + errorResponse.allErrors);
+        ' - ' + 'Referências' + '. ' + errorResponse.AllErrors);
     except
       on E: Exception do
         TLogSubject.GetInstance.NotifyAll(E.Message);
@@ -691,6 +703,34 @@ begin
     FreeAndNil(errorResponse);
     Sleep(1000);
   end;
+end;
+
+function TDAOReferenciasBling.LocalizarEAtualizarProduto(const AReferencia: string): string;
+var
+  Response: IResponse;
+  AObj: TJSONObject;
+begin
+  result := '';
+
+  Response := TRequest.New.BaseURL(C_BASEURL + C_PRODUTOS).Accept(C_ACCEPT)
+    .ContentType(CONTENTTYPE_APPLICATION_JSON)
+    .AddParam('codigos[]',AReferencia)
+    .TokenBearer(FAuth.AccessToken).OnAfterExecute(
+    procedure(const Req: IRequest; const Res: IResponse)
+    begin
+      FAuth.AtualizarToken(Req, Res);
+    end).Get;
+
+    if Response.StatusCode = 200 then
+    begin
+      AObj := TJSONObject.ParseJSONValue(Response.Content) as TJSONObject;
+      try
+        result := AObj.GetValue<TJSONArray>('data')[0].GetValue<string>('id');
+      finally
+        AObj.Free;
+      end;
+    end;
+
 end;
 
 end.

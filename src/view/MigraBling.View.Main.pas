@@ -341,7 +341,10 @@ var
   ConfigFiliais: TDictionary<integer, Boolean>;
   I, idTabelaPreco: integer;
 begin
-  idTabelaPreco := integer(rgPrecoTabela.Items.Objects[rgPrecoTabela.ItemIndex]);
+  idTabelaPreco := 0;
+
+  if rgPrecoTabela.ItemIndex >=0 then
+    idTabelaPreco := integer(rgPrecoTabela.Items.Objects[rgPrecoTabela.ItemIndex]);
 
   FSincronizador.GravarConfiguracoes(edtIPSQLServer.Text, edtBancoSQLServer.Text,
     edtUsuarioSQLServer.Text, edtSenhaSQLServer.Text, edtClientIDBling.Text,

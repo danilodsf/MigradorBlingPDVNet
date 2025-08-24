@@ -6,43 +6,63 @@ Projeto em Delphi para realizar a **sincronização de produtos, estoques e vari
 
 ## 🚀 Funcionalidades
 
-- 🔁 Sincronização completa de produtos, estoques e variações
-- 🔐 Autenticação OAuth com refresh automático via servidor HTTP (Horse)
-- 🌐 Integração via API REST do Bling usando RESTRequest4Delphi
-- 💾 Banco local em SQLite criado e versionado automaticamente
-- 🧱 Criação automática de colunas que estejam ausentes no banco
-- 📦 Gerenciamento de dependências com BOSS
-- 🔄 Backup automático do banco com thread dedicada
-- 🔒 Mutex para impedir múltiplas instâncias simultâneas
-- 🧳 Executável compactado com UPX
+- 🔁 Sincronização completa de produtos, estoques e variações  
+- 🔐 Autenticação OAuth com refresh automático via servidor HTTP (Horse)  
+- 🌐 Integração via API REST do Bling usando RESTRequest4Delphi  
+- 💾 Banco local em SQLite criado e versionado automaticamente  
+- 🧱 Criação automática de colunas que estejam ausentes no banco  
+- 📦 Gerenciamento de dependências com BOSS  
+- 🔄 Backup automático do banco com thread dedicada  
+- 🔒 Mutex para impedir múltiplas instâncias simultâneas  
+- 🧳 Executável compactado com UPX  
 - ✅ Projeto sem _hints_ ou _warnings_
 
 ---
 
 ## 🧠 Arquitetura e boas práticas
 
-- **Padrões de projeto aplicados**:
-  - `Observer`
-  - `Singleton`
-  - `Factory`
-  - `Prototype`
-  - `Adapter`
-  - `Strategy`
-- **Clean Code**: foco em legibilidade e manutenção
+- **Padrões de projeto aplicados**:  
+  - `Observer`  
+  - `Singleton`  
+  - `Factory`  
+  - `Prototype`  
+  - `Adapter` (para abstrair diferentes camadas de conexão, como ADO ou FireDAC)  
+  - `Strategy`  
+
+- **Camada de Adapter**:  
+  O projeto utiliza um **Adapter de conexão**, permitindo alternar entre ADO e FireDAC.  
+  - Uso de `includes` para habilitar o FireDAC para SQL Server quando disponível.  
+  - Mantém o mesmo contrato da interface `IConexao`, permitindo escalabilidade e fácil manutenção.
+
+- **Clean Code**: foco em legibilidade e manutenção  
 - **MVC**: separação de responsabilidades por camadas
+
+---
+
+## 🔐 Segurança
+
+- Variáveis sensíveis, como **credenciais de conexão**, são obtidas via **variáveis de ambiente**.  
+- Tokens OAuth são armazenados de forma segura e atualizados automaticamente.  
+- Mutex para impedir múltiplas instâncias do processo.  
+- Backup diário da base SQLite feito em **thread separada**.
 
 ---
 
 ## 📚 Tecnologias e ferramentas
 
-- **Delphi (Tokyo ou superior)**
-- **FireDAC** (para acesso ao SQLite e SQL Server)
-- **BOSS** – Gerenciador de dependências para Delphi
-- **Horse** – Framework HTTP para o servidor OAuth
-- **RESTRequest4Delphi** – Cliente HTTP REST
-- **SQLite** – Banco local
-- **SQL Server** – Fonte de dados principal
-- **UPX** – Compactação do executável
+- **Delphi (Tokyo ou superior)**  
+- **FireDAC** – Conexão com SQLite e opcionalmente SQL Server via driver nativo ou ODBC*  
+- **ADO** – Suporte para SQL Server em versões do Delphi sem driver FireDAC nativo  
+- **BOSS** – Gerenciador de dependências para Delphi  
+- **Horse** – Framework HTTP para o servidor OAuth  
+- **RESTRequest4Delphi** – Cliente HTTP REST  
+- **SQLite** – Banco local  
+- **SQL Server** – Fonte de dados principal  
+- **UPX** – Compactação do executável  
+
+> **Nota:** O uso de FireDAC para SQL Server depende da edição do Delphi ou de drivers adicionais.  
+> **Importante:** Caso opte por **ADO**, é necessário instalar o driver **Microsoft OLE DB Driver for SQL Server (MSOLEDBSQL)**, disponível aqui:  
+> [https://learn.microsoft.com/sql/connect/oledb/download-oledb-driver-for-sql-server](https://learn.microsoft.com/sql/connect/oledb/download-oledb-driver-for-sql-server)
 
 ---
 
@@ -55,49 +75,52 @@ git clone https://github.com/danilodsf/MigradorBlingPDVNet.git
 cd MigradorBlingPDVNet
 ```
 
-### 2. Instalar o BOSS (caso não tenha)
+### 2. Configurar variáveis de ambiente
 
-#### 🔸 Instalação via NPM (Node.js necessário):
+Antes de compilar, configure no sistema:  
+- **PDVNET_SERVER** – Endereço ou instância do SQL Server  
+- **PDVNET_USER** – Usuário de conexão  
+- **PDVNET_PASS** – Senha de conexão  
 
+No Windows PowerShell:
+```powershell
+setx PDVNET_SERVER "SERVIDOR\INSTANCIA"
+setx PDVNET_USER "usuario"
+setx PDVNET_PASS "senha"
+```
+
+---
+
+### 3. Instalar o BOSS (caso não tenha)
+
+#### 🔸 Instalação via NPM:
 ```bash
 npm install -g @hashload/boss
 ```
 
-#### 🔸 Ou baixe o executável
+#### 🔸 Ou baixe o executável:
+https://github.com/HashLoad/boss/releases
 
-Acesse: https://github.com/HashLoad/boss/releases
+---
 
-E adicione o executável ao PATH do sistema, se desejar.
-
-### 3. Instalar as dependências
-
-Execute no terminal:
+### 4. Instalar as dependências
 
 ```bash
 boss install
 ```
 
-Isso criará a pasta `modules/` e instalará:
+---
 
-- Horse
-- RESTRequest4Delphi
-- Outras dependências descritas no `boss.json`
+### 5. Abrir o projeto no Delphi
 
-> ⚠️ O arquivo `boss-lock.json` garante que as **mesmas versões** das libs sejam instaladas.
-
-### 4. Abrir o projeto no Delphi
-
-- Localize e abra o arquivo `MigradorBling.dproj` (ou nome equivalente) na IDE Delphi.
-- Compile normalmente.
-- Execute o programa.
+Abra o arquivo `MigradorBling.dproj` e compile.
 
 ---
 
 ## 🧾 Funcionamento do banco de dados
 
-- O banco local SQLite é criado automaticamente se não existir.
-- Toda a estrutura (tabelas e índices) é gerada na primeira execução.
-- Se um novo campo for adicionado no código e não existir no banco, ele será criado dinamicamente com `ALTER TABLE`.
+- O banco SQLite é criado automaticamente na primeira execução.  
+- Novas colunas ausentes são adicionadas via `ALTER TABLE`.  
 
 ---
 
@@ -105,56 +128,31 @@ Isso criará a pasta `modules/` e instalará:
 
 ```
 ├─ assets                 ← Imagens e ícone do programa
-├─ src/                       ← Código-fonte
-├─ bin/                       ← Executável
-├─ bin/db                     ← Banco de Dados SQLite
-├─ boss.json                  ← Dependências do projeto
-├─ boss-lock.json             ← Hashes exatos das dependências
-├─ README.md                  ← Este arquivo
-├─ .gitignore                 ← Ignora /modules e arquivos desnecessários
-└─ modules/                   ← Instalado via BOSS (não precisa versionar)
+├─ src/                   ← Código-fonte
+├─ bin/                   ← Executável
+├─ bin/db                 ← Banco de Dados SQLite
+├─ boss.json              ← Dependências do projeto
+├─ boss-lock.json         ← Hashes exatos das dependências
+├─ README.md              ← Este arquivo
+├─ .gitignore             ← Ignora /modules e arquivos desnecessários
+└─ modules/               ← Instalado via BOSS (não precisa versionar)
 ```
-
----
-
-## 🛡️ Segurança
-
-- ✅ Mutex impede mais de uma instância do processo.
-- 🔐 Token OAuth salvo com segurança e atualizado automaticamente.
-- 💾 Backup diário da base SQLite feito com thread separada.
 
 ---
 
 ## 👨‍💻 Contribuindo
 
-Contribuições são bem-vindas! Para colaborar com o projeto, siga este fluxo:
+1. **Fork** o repositório  
+2. **Crie uma branch baseada na `develop`**  
+3. Faça commits claros e objetivos  
+4. Envie a branch para seu fork  
+5. Crie um Pull Request para `develop`
 
-1. **Fork** o repositório
-2. **Crie uma branch baseada na `develop`** para sua feature ou correção:
-
-```
-   git checkout develop
-   git pull origin develop
-   git checkout -b minha-feature
-```   
-3. **Faça seus commits normalmente:**
-
-```
-git commit -m "Minha contribuição"
-```
-
-4. **Envie sua branch para seu fork:**
-```
-git push origin minha-feature
-```
-
-5. Crie um **Pull Request** para a branch _develop_, e não para a _main_.
-- ⚠️ Todas as contribuições devem partir da branch develop. A main é protegida e usada apenas para versões estáveis e publicações.
 ---
 
 ## 📄 Licença
 
-Este projeto está licenciado sob a licença MIT. Consulte o arquivo `LICENSE`.
+Licenciado sob **MIT**. Consulte `LICENSE`.
 
 ---
 
@@ -162,12 +160,3 @@ Este projeto está licenciado sob a licença MIT. Consulte o arquivo `LICENSE`.
 
 **Danilo Fois**  
 📺 Canal YouTube: [@danilofois](https://www.youtube.com/@danilofoistecnologiaavancada)
-
----
-
-## 📌 Observações finais
-
-- **O arquivo de banco SQLite é criado automaticamente** na primeira execução. 
-- **Use UPX manualmente** após compilar para gerar o executável compactado (opcional).
-
----

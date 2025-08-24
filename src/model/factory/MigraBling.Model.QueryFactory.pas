@@ -6,6 +6,7 @@ uses
   MigraBling.Model.Interfaces.Query,
   MigraBling.Model.Interfaces.QueryFactory,
   MigraBling.Model.QueryFiredac,
+  MigraBling.Model.QueryADO,
   MigraBling.Model.Interfaces.Conexao;
 
 type
@@ -21,7 +22,10 @@ implementation
 
 function TQueryFactory.GetQuery(AConexao: IConexao): IQuery;
 begin
-  Result := TQueryFireDAC.Create(AConexao);
+  if AConexao.BaseConectada = 'SQLite' then
+    Result := TQueryFireDAC.Create(AConexao)
+  else
+    Result := TQueryADO.Create(AConexao)
 end;
 
 class function TQueryFactory.New: IQueryFactory;

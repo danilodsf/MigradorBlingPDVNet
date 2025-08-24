@@ -10,7 +10,8 @@ uses
   MigraBling.Model.Services.SubServices.Connection,
   MigraBling.Model.LogObserver,
   MigraBling.Model.Interfaces.DAO,
-  MigraBling.Model.Configuracao;
+  MigraBling.Model.Configuracao,
+  MigraBling.Model.Utils;
 
 type
   TBackupThread = class(TThread)
@@ -46,6 +47,10 @@ begin
 
     result := IncludeTrailingPathDelimiter(LConfiguracao.PastaBackup) +
       FormatDateTime('yyyymmdd', Date) + '.db';
+
+{$IFDEF DEBUG}
+    result := getAppDir + 'db\' + ExtractFileName(result);
+{$ENDIF}
   finally
     LConfiguracao.Free;
   end;

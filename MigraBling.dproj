@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{2CA22502-7C70-484B-B6E1-29E2E435A5A5}</ProjectGuid>
-        <ProjectVersion>20.2</ProjectVersion>
+        <ProjectVersion>20.3</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Release</Config>
@@ -136,9 +136,9 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=SplitFashion;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.27;InternalName=Migrador PDVNet Bling;LegalCopyright=;LegalTrademarks=;OriginalFilename=Migrador PDVNet Bling;ProgramID=$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=SplitFashion;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.47;InternalName=Migrador PDVNet Bling;LegalCopyright=;LegalTrademarks=;OriginalFilename=Migrador PDVNet Bling;ProgramID=$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <Icon_MainIcon>assets\img\ico.ico</Icon_MainIcon>
-        <VerInfo_Build>27</VerInfo_Build>
+        <VerInfo_Build>47</VerInfo_Build>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -159,20 +159,20 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="src\model\services\interfaces\MigraBling.Model.Services.Interfaces.Sincronizador.pas"/>
         <DCCReference Include="src\model\services\subservices\pdvnet\interfaces\MigraBling.Model.Services.SubServices.Interfaces.PDVNET.pas"/>
         <DCCReference Include="src\model\services\subservices\bling\interfaces\MigraBling.Model.Services.SubServices.Interfaces.Auth.pas"/>
-        <DCCReference Include="src\model\factory\interfaces\MigraBling.Model.Interfaces.Conexao.pas"/>
+        <DCCReference Include="src\model\adapter\connection\interfaces\MigraBling.Model.Interfaces.Conexao.pas"/>
         <DCCReference Include="src\model\services\subservices\sqlite\MigraBling.Model.Services.SubServices.SQLite.pas"/>
         <DCCReference Include="src\model\factory\interfaces\MigraBling.Model.Interfaces.ConexaoFactory.pas"/>
         <DCCReference Include="src\model\factory\MigraBling.Model.ConexaoFactory.pas"/>
-        <DCCReference Include="src\model\factory\MigraBling.Model.ConexaoFiredac.pas"/>
+        <DCCReference Include="src\model\adapter\connection\MigraBling.Model.ConexaoFiredac.pas"/>
         <DCCReference Include="src\model\interfaces\MigraBling.Model.Interfaces.DAO.pas"/>
         <DCCReference Include="src\model\classes\MigraBling.Model.Configuracao.pas"/>
         <DCCReference Include="src\model\services\subservices\sqlite\dao\MigraBling.Model.Services.SubServices.SQLite.DAOConfiguracoes.pas"/>
         <DCCReference Include="src\model\factory\interfaces\MigraBling.Model.Interfaces.QueryFactory.pas"/>
         <DCCReference Include="src\model\factory\MigraBling.Model.QueryFactory.pas"/>
-        <DCCReference Include="src\model\factory\interfaces\MigraBling.Model.Interfaces.Query.pas"/>
-        <DCCReference Include="src\model\factory\MigraBling.Model.QueryFiredac.pas"/>
-        <DCCReference Include="src\model\factory\interfaces\MigraBling.Model.Interfaces.QueryParam.pas"/>
-        <DCCReference Include="src\model\factory\MigraBling.Model.QueryParamFireDAC.pas"/>
+        <DCCReference Include="src\model\adapter\query\interfaces\MigraBling.Model.Interfaces.Query.pas"/>
+        <DCCReference Include="src\model\adapter\query\MigraBling.Model.QueryFiredac.pas"/>
+        <DCCReference Include="src\model\adapter\query\interfaces\MigraBling.Model.Interfaces.QueryParam.pas"/>
+        <DCCReference Include="src\model\adapter\query\MigraBling.Model.QueryParamFireDAC.pas"/>
         <DCCReference Include="src\model\services\subservices\pdvnet\dao\MigraBling.Model.Services.SubServices.PDVNET.DAOCategorias.pas"/>
         <DCCReference Include="src\model\services\subservices\sqlite\interfaces\MigraBling.Model.Services.SubServices.Interfaces.SQLite.pas"/>
         <DCCReference Include="src\model\services\subservices\pdvnet\MigraBling.Model.Services.SubServices.PDVNET.pas"/>
@@ -245,6 +245,11 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="src\model\services\backup\MigraBling.Model.Services.Backup.pas"/>
         <DCCReference Include="src\model\services\subservices\connection\MigraBling.Model.Services.SubServices.Connection.pas"/>
         <DCCReference Include="src\model\services\subservices\sqlite\MigraBling.Model.Services.SubServices.SQLite.CriadorBD.pas"/>
+        <DCCReference Include="src\model\adapter\connection\MigraBling.Model.ConexaoADO.pas"/>
+        <DCCReference Include="src\model\classes\MigraBling.Model.ConexaoProvider.pas"/>
+        <DCCReference Include="src\model\adapter\query\MigraBling.Model.QueryADO.pas"/>
+        <DCCReference Include="src\model\adapter\query\MigraBling.Model.QueryParamADO.pas"/>
+        <DCCReference Include="src\model\adapter\query\interfaces\MigraBling.Model.Interfaces.QueryParamArraySource.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -406,6 +411,16 @@ $(PostBuildEvent)]]></PostBuildEvent>
                     </Platform>
                     <Platform Name="Android64">
                         <RemoteDir>res\values-v31</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="AndroidSplashStylesV35">
+                    <Platform Name="Android">
+                        <RemoteDir>res\values-v35</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Android64">
+                        <RemoteDir>res\values-v35</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>

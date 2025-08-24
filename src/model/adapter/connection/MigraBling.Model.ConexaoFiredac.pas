@@ -2,6 +2,8 @@ unit MigraBling.Model.ConexaoFiredac;
 
 interface
 
+{$I mb_build.inc}
+
 uses
   Data.DB,
   System.Classes,
@@ -15,8 +17,10 @@ uses
   FireDAC.Stan.Pool,
   FireDAC.Stan.Async,
   FireDAC.Phys,
+  {$IFDEF USE_FD_MSSQL}
   FireDAC.Phys.MSSQL,
   FireDAC.Phys.MSSQLDef,
+  {$ENDIF}
   FireDAC.VCLUI.Wait,
   FireDAC.Comp.Client,
   FireDAC.Stan.Param,
@@ -83,6 +87,7 @@ end;
 constructor TConexaoFireDAC.Create;
 begin
   FConnection := TFDConnection.Create(nil);
+  FConnection.LoginPrompt := False;
 end;
 
 destructor TConexaoFireDAC.Destroy;
@@ -99,6 +104,9 @@ begin
   if FConnection.ActualDriverID = 'SQLite' then
   begin
     ForceDirectories(ExtractFilePath(ACaminhoBackup));
+
+    if FileExists(ACaminhoBackup) then
+      DeleteFile(ACaminhoBackup);
 
     if not FileExists(ACaminhoBackup) then
     begin
@@ -159,6 +167,11 @@ end;
 
 procedure TConexaoFireDAC.SetConnected(AValue: Boolean);
 begin
+  if FConnection.ActualDriverID = 'SQLite' then
+  begin
+    FConnection.FormatOptions.OwnMapRules := True;
+    FConnection.FormatOptions.MapRules.Add(dtInt64, dtFmtBCD);
+  end;
   FConnection.Connected := AValue;
 end;
 

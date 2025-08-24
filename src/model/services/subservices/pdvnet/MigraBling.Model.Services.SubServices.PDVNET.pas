@@ -3,6 +3,7 @@ unit MigraBling.Model.Services.SubServices.PDVNET;
 interface
 
 uses
+  System.Classes,
   System.Generics.Collections,
   MigraBling.Model.Services.SubServices.Interfaces.PDVNET,
   MigraBling.Model.Configuracao,
@@ -16,8 +17,9 @@ uses
   MigraBling.Model.Services.SubServices.PDVNET.RegistrosMovimentados,
   MigraBling.Model.Services.SubServices.Connection,
   MigraBling.Model.LogObserver,
+  MigraBling.Model.ConexaoProvider,
   MigraBling.Model.Utils,
-  MigraBling.Model.TabelaDados;
+  MigraBling.Model.TabelaDados, Vcl.Dialogs;
 
 type
   TPDVNETService = class(TInterfacedObject, IPDVNETService)
@@ -180,7 +182,7 @@ begin
   LConfiguracoes := FConfigurador.Configuracoes.Ler(0);
   try
     try
-      LConexao := TConexaoFactory.New.GetConexao;
+      LConexao := TConexaoFactory.New.GetConexao({$IFDEF USE_FD_MSSQL}dpFD{$ELSE}dpADO{$ENDIF});
       LConexao.BaseConectada := 'PDVNET';
       LConexao.Params.Add('Server=' + LConfiguracoes.PDVNET_Server);
       LConexao.Params.Add('OSAuthent=No');
@@ -193,7 +195,11 @@ begin
       LConexao.Connected := true;
       Result := true;
     except
-      Result := false;
+      on E: Exception do
+      begin
+        ShowMessage(E.Message);
+        Result := false;
+      end;
     end;
   finally
     LConfiguracoes.Free;
