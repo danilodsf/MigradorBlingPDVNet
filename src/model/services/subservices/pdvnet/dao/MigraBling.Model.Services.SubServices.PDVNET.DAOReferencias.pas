@@ -10,37 +10,39 @@ uses
   MigraBling.Model.QueryFactory,
   System.Generics.Collections,
   System.SysUtils,
-  MigraBling.Model.LogObserver, MigraBling.Model.AppControl;
+  MigraBling.Model.LogObserver, MigraBling.Model.AppControl,
+  MigraBling.Model.Variacoes;
 
 type
   TDAOReferenciasPDVNET = class(TInterfacedObject, IDAOTabelasPDVNET<TReferencia>)
   private
     FConexao: IConexao;
+    FVariacoes: IDAOTabelasPDVNETDependencia<TVariacao>;
   public
-    function Ler: TObjectList<TReferencia>;
+    function Ler: TObjectList<TReferencia>; overload;
     constructor Create(AConexao: IConexao);
   end;
 
 implementation
+
+uses
+  MigraBling.Model.Services.SubServices.PDVNET.DAOVariacoes;
 
 { TDAOReferenciasPDVNET }
 
 constructor TDAOReferenciasPDVNET.Create(AConexao: IConexao);
 begin
   FConexao := AConexao;
+  FVariacoes := TDAOVariacoesPDVNET.Create(FConexao);
 end;
 
 function TDAOReferenciasPDVNET.Ler: TObjectList<TReferencia>;
 var
   LReferencia: TReferencia;
-  LQuery, LQuery2: IQuery;
+  LQuery: IQuery;
+  LVariacoes: TObjectList<TVariacao>;
 begin
   LQuery := TQueryFactory.New.GetQuery(FConexao.Clone);
-  LQuery2 := TQueryFactory.New.GetQuery(FConexao.Clone);
-
-  LQuery2.Close;
-  LQuery2.SQL.Text := 'SELECT MAT_CODIGO, MAT_COR, MAT_TAMANHO, MAT_INATIVO ' + 'FROM MATERIAIS ' +
-    'WHERE MAT_REFERENCIA = :PMAT_REFERENCIA ';
 
   Result := TObjectList<TReferencia>.Create;
   LQuery.Close;
@@ -78,6 +80,14 @@ begin
     LReferencia.Unidade := LQuery.FieldByName('UNI_DESCRICAO').AsString;
     LReferencia.Inativo := LQuery.FieldByName('REF_INATIVO2').AsBoolean;
     LReferencia.TipoReg := LQuery.FieldByName('TIPO').AsString;
+
+    LVariacoes := FVariacoes.Ler(LReferencia.Referencia);
+    try
+      while LVariacoes.Count > 0 do
+        LReferencia.Variacoes.Add(LVariacoes.Extract(LVariacoes.Last));
+    finally
+      LVariacoes.Free;
+    end;
 
     Result.Add(LReferencia);
     LQuery.Next;

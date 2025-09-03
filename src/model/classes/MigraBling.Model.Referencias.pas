@@ -138,7 +138,6 @@ end;
 destructor TReferencia.Destroy;
 begin
   FVariacoes.Free;
-
   inherited;
 end;
 

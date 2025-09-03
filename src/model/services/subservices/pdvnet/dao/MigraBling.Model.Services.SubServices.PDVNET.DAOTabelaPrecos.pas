@@ -18,7 +18,7 @@ type
   private
     FConexao: IConexao;
   public
-    function Ler: TObjectList<TTabelaPreco>;
+    function Ler: TObjectList<TTabelaPreco>; overload;
     constructor Create(AConexao: IConexao);
   end;
 

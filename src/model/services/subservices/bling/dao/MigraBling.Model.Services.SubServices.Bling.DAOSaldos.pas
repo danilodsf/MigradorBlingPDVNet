@@ -53,8 +53,8 @@ end;
 
 procedure TDAOSaldosBling.Criar(AObj: TSaldo);
 begin
-  if (AObj.DesconsiderarEstoque) or (AObj.Produto_ID_Bling = '') or
-    ((AObj.Produto_ID_Bling = 'EXCLUIR')) then
+  if ((AObj.Produto_ID_Bling = '') or (AObj.Produto_ID_Bling = 'EXCLUIR') or
+    (AObj.ID_Bling = 'EXCLUIR')) then
   begin
     AObj.ID_Bling := 'EXCLUIR';
     exit;

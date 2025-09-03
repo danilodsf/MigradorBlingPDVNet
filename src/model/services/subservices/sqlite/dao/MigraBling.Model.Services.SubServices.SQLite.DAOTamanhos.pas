@@ -17,7 +17,8 @@ uses
 type
   TDAOTamanhosSQLite = class(TDaoSQLite, IDAOTabelasSQLite<TTamanho>)
   public
-    function Ler: TObjectList<TTamanho>;
+    function Ler: TObjectList<TTamanho>; overload;
+    function Ler(AID: string): TTamanho; overload;
     procedure Persistir(AListObj: TObjectList<TTamanho>);
     procedure GravarIDsBling(AListObj: TObjectList<TTamanho>);
     constructor Create(AConexao: IConexao);
@@ -48,6 +49,11 @@ begin
     begin
       AQuery.ParamByName('PID_BLING').AsString := ATamanho.ID_CampoCustomizavel;
     end, 'Tamanhos');
+end;
+
+function TDAOTamanhosSQLite.Ler(AID: string): TTamanho;
+begin
+  Result := nil;
 end;
 
 function TDAOTamanhosSQLite.Ler: TObjectList<TTamanho>;

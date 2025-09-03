@@ -22,6 +22,11 @@ type
     function LerEntidade<T: class, constructor>(const ASQL: string;
       const AMapeador: TFunc<IQuery, T>): TObjectList<T>; overload;
 
+    function LerEntidade<T: class, constructor>(const ASQL, ASQL2, ASQL3: string;
+      const AMapeadorPrincipal: TProc<IQuery, boolean>;
+      const AInserirDados: TProc<IQuery, IQuery, IQuery>;
+      const AMapeador: TFunc<IQuery, T>): TObjectList<T>; overload;
+
     function LerEntidade<T: class, constructor; TComp: class, constructor>(const ASQL,
       ASQLComplementar: string; const AParametrosQueryComplementar: TProc<IQuery>;
       const AMapeadorComplementar: TFunc<IQuery, TDictionary<string, TObjectList<TComp>>>;
@@ -166,6 +171,57 @@ begin
       break;
 
     LObj := AMapeador(LQuery);
+    Result.Add(LObj);
+    LQuery.Next;
+  end;
+end;
+
+function TDaoSQLite.LerEntidade<T>(const ASQL, ASQL2, ASQL3: string;
+  const AMapeadorPrincipal: TProc<IQuery, boolean>;
+  const AInserirDados: TProc<IQuery, IQuery, IQuery>;
+  const AMapeador: TFunc<IQuery, T>): TObjectList<T>;
+var
+  LQuery, LQueryInsert, LQueryConsolida: IQuery;
+  LObj: T;
+begin
+  Result := nil;
+
+  if TAppControl.AppFinalizando then
+    Exit;
+
+  Result := TObjectList<T>.Create(True);
+
+  LQuery := TQueryFactory.New.GetQuery(FConexao.Clone);
+  LQuery.SQL.Text := ASQL;
+  AMapeadorPrincipal(LQuery, true);
+  LQuery.Open;
+
+  LQueryInsert := TQueryFactory.New.GetQuery(FConexao.Clone);
+  LQueryInsert.SQL.Text := ASQL2;
+
+  LQueryConsolida := TQueryFactory.New.GetQuery(FConexao.Clone);
+  LQueryConsolida.SQL.Text := ASQL3;
+
+  while not LQuery.EOF do
+  begin
+    LQueryConsolida.Close;
+    LQueryInsert.Close;
+    AInserirDados(LQuery, LQueryInsert, LQueryConsolida);
+    LQueryInsert.ExecSQL;
+    LQuery.Next;
+  end;
+
+  LQuery.Close;
+  AMapeadorPrincipal(LQuery, false);
+  LQuery.Open;
+
+  while not LQuery.EOF do
+  begin
+    if TAppControl.AppFinalizando then
+      break;
+
+    LObj := AMapeador(LQuery);
+
     Result.Add(LObj);
     LQuery.Next;
   end;

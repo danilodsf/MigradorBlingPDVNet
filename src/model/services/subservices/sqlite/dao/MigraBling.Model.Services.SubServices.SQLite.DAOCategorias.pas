@@ -17,7 +17,8 @@ uses
 type
   TDAOCategoriasSQLite = class(TDaoSQLite, IDAOTabelasSQLite<TCategoria>)
   public
-    function Ler: TObjectList<TCategoria>;
+    function Ler: TObjectList<TCategoria>; overload;
+    function Ler(AID: string): TCategoria; overload;
     procedure Persistir(AListObj: TObjectList<TCategoria>); overload;
     procedure GravarIDsBling(AListObj: TObjectList<TCategoria>);
     constructor Create(AConexao: IConexao);
@@ -48,6 +49,11 @@ begin
     begin
       AQuery.ParamByName('PID_BLING').AsString := ACategoria.ID_CampoCustomizavel;
     end, 'Categorias');
+end;
+
+function TDAOCategoriasSQLite.Ler(AID: string): TCategoria;
+begin
+  Result := nil;
 end;
 
 procedure TDAOCategoriasSQLite.Persistir(AListObj: TObjectList<TCategoria>);

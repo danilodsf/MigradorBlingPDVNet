@@ -17,7 +17,8 @@ uses
 type
   TDAOPrecosSQLite = class(TDaoSQLite, IDAOTabelasSQLite<TPreco>)
   public
-    function Ler: TObjectList<TPreco>;
+    function Ler: TObjectList<TPreco>; overload;
+    function Ler(AID: string): TPreco; overload;
     procedure Persistir(AListObj: TObjectList<TPreco>);
     procedure GravarIDsBling(AListObj: TObjectList<TPreco>);
     constructor Create(AConexao: IConexao);
@@ -35,6 +36,11 @@ end;
 procedure TDAOPrecosSQLite.GravarIDsBling(AListObj: TObjectList<TPreco>);
 begin
   exit;
+end;
+
+function TDAOPrecosSQLite.Ler(AID: string): TPreco;
+begin
+  Result := nil;
 end;
 
 function TDAOPrecosSQLite.Ler: TObjectList<TPreco>;

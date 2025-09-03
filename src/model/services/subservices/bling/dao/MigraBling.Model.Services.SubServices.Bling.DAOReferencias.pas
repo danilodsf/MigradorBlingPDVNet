@@ -178,21 +178,7 @@ begin
 
   Result.AddPair('camposCustomizados', JSONArrayCampos);
 
-//  var
-//    Txt: TStrings;
-//
-//  Txt := TStringList.Create;
-//  try
-//    try
-//      Txt.Text := Result.ToJSON;
-//      Txt.SaveToFile('json.json');
-//    except
-//      on E: Exception do
-//        raise Exception.Create(E.Message);
-//    end;
-//  finally
-//    Txt.Free;
-//  end;
+  //GravarLogTeste(Result.ToJSON);
 
   if AObj.Variacoes.Count > 0 then
   begin
@@ -218,7 +204,13 @@ begin
 
         JSONBodyVariacao := TJSONObject.Create;
         if AExibirIDs then
+        begin
+          if (variacao.ID_Bling = '') then
+            variacao.ID_Bling := LocalizarEAtualizarProduto(variacao.ID);
+            Sleep(1000);
+
           JSONBodyVariacao.AddPair('id', variacao.ID_Bling);
+        end;
         JSONBodyVariacao.AddPair('nome', AObj.Nome + ' COR: ' + variacao.CorStr + '; TAMANHO: ' +
           variacao.TamanhoStr);
         JSONBodyVariacao.AddPair('codigo', variacao.ID);
@@ -270,20 +262,9 @@ begin
         JSONBodyVariacao.AddPair('camposCustomizados', JSONArrayCamposVariacoes);
 
         JSONBodyVariacao.AddPair('variacao', TJSONObject.Create.AddPair('nome',
-          variacao.Descricao));
+          variacao.Descricao).AddPair('ordem',variacao.Ordem));
 
-        // Txt := TStringList.Create;
-        // try
-        // try
-        // Txt.Text := JSONBodyVariacao.ToJSON;
-        // Txt.SaveToFile('json.json');
-        // except
-        // on E: Exception do
-        // raise Exception.Create(E.Message);
-        // end;
-        // finally
-        // Txt.Free;
-        // end;
+        //GravarLogTeste(JSONBodyVariacao.ToJSON);
 
         JSONArrayVariacoes.Add(JSONBodyVariacao);
       end;
@@ -459,7 +440,7 @@ end;
 procedure TDAOReferenciasBling.Atualizar(AObj: TReferencia);
 var
   Response: IResponse;
-  JSON, JSONBodyVariacao, JSONVariacoes: TJSONObject;
+  JSONEnvio, JSON, JSONBodyVariacao, JSONVariacoes: TJSONObject;
   JSONArrayUpdated, JSONArraySaved: TJSONArray;
   errorResponse: TResponseError;
   variacao: TVariacao;
@@ -481,9 +462,11 @@ begin
   errorResponse := nil;
   try
     try
+      JSONEnvio := ObterJSONProduto(AObj, true);
+
       Response := TRequest.New.BaseURL(C_BASEURL + C_PRODUTOS + AObj.ID_Bling).Accept(C_ACCEPT)
         .ContentType(CONTENTTYPE_APPLICATION_JSON).TokenBearer(FAuth.AccessToken)
-        .AddBody(ObterJSONProduto(AObj, true)).OnAfterExecute(
+        .AddBody(JSONEnvio).OnAfterExecute(
         procedure(const Req: IRequest; const Res: IResponse)
         begin
           FAuth.AtualizarToken(Req, Res);
@@ -529,6 +512,8 @@ begin
 
       raise Exception.Create(errorResponse.error.Message + ' - ' + errorResponse.error.description +
         ' - ' + 'Referências' + '. ' + errorResponse.AllErrors);
+
+
     except
       on E: Exception do
         TLogSubject.GetInstance.NotifyAll(E.Message);
