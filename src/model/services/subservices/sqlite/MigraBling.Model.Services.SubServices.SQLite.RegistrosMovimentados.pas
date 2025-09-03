@@ -137,8 +137,8 @@ begin
   FFiliais := TDAOFiliaisSQLite.Create(FConexao);
   FTabelaPrecos := TDAOTabelaPrecosSQLite.Create(FConexao);
   FPrecos := TDAOPrecosSQLite.Create(FConexao);
-  FVariacoes := TDAOVariacoesSQLite.Create(FConexao);
-  FSaldos := TDAOSaldosSQLite.Create(FConexao);
+  FVariacoes := TDAOVariacoesSQLite.Create(FConexao, AConfigurador);
+  FSaldos := TDAOSaldosSQLite.Create(FConexao, AConfigurador);
   FMovimentos := nil;
 end;
 

@@ -17,7 +17,8 @@ uses
 type
   TDAOFiliaisSQLite = class(TDaoSQLite, IDAOTabelasSQLite<TFilial>)
   public
-    function Ler: TObjectList<TFilial>;
+    function Ler: TObjectList<TFilial>; overload;
+    function Ler(AID: string): TFilial; overload;
     procedure Persistir(AListObj: TObjectList<TFilial>);
     procedure GravarIDsBling(AListObj: TObjectList<TFilial>);
     constructor Create(AConexao: IConexao);
@@ -42,6 +43,11 @@ begin
       AQuery.ParamByName('PFIL_CODIGO').AsIntegers(AIndex, AFilial.ID);
       AQuery.ParamByName('PID_BLING').AsStrings(AIndex, AFilial.ID_Bling);
     end, 'Filiais');
+end;
+
+function TDAOFiliaisSQLite.Ler(AID: string): TFilial;
+begin
+  Result := nil;
 end;
 
 function TDAOFiliaisSQLite.Ler: TObjectList<TFilial>;

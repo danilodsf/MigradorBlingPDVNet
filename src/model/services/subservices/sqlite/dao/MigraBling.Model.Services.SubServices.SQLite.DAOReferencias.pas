@@ -20,8 +20,10 @@ type
   TDAOReferenciasSQLite = class(TDaoSQLite, IDAOTabelasSQLite<TReferencia>)
   private
     FConfigurador: IDAOConfiguracoesSQLite<TConfiguracao>;
+    FVariacoes: IDAOTabelasSQLite<TVariacao>;
   public
-    function Ler: TObjectList<TReferencia>;
+    function Ler: TObjectList<TReferencia>; overload;
+    function Ler(AID: string): TReferencia; overload;
     procedure Persistir(AListObj: TObjectList<TReferencia>);
     procedure GravarIDsBling(AListObj: TObjectList<TReferencia>);
     constructor Create(AConexao: IConexao; AConfigurador: IDAOConfiguracoesSQLite<TConfiguracao>);
@@ -29,12 +31,16 @@ type
 
 implementation
 
+uses
+  MigraBling.Model.Services.SubServices.SQLite.DAOVariacoes;
+
 { TDAOReferenciasSQLite }
 
 constructor TDAOReferenciasSQLite.Create(AConexao: IConexao;
   AConfigurador: IDAOConfiguracoesSQLite<TConfiguracao>);
 begin
   FConfigurador := AConfigurador;
+  FVariacoes := TDAOVariacoesSQLite.Create(AConexao, AConfigurador);
   inherited Create(AConexao);
 end;
 
@@ -102,6 +108,11 @@ begin
     end, 'Referências');
 end;
 
+function TDAOReferenciasSQLite.Ler(AID: string): TReferencia;
+begin
+  Result := nil;
+end;
+
 function TDAOReferenciasSQLite.Ler: TObjectList<TReferencia>;
 const
   SQL = 'SELECT COL.ID_BLING REF_COLECAO, COL_DESCRICAO, REF_REFERENCIA, ' +
@@ -137,7 +148,7 @@ const
     'T.ID_BLING TAM_ID_BLING from MATERIAIS M join CORES C on (C.COR_CODIGO = M.MAT_COR) ' +
     'join TAMANHOS T on (T.TAM_CODIGO = M.MAT_TAMANHO) ' +
     'join PRECO on (PRE_PRODUTO = MAT_CODIGO) where PRE_TABELA = :PCODTABELA ' +
-    'order by mat_referencia';
+    'order by mat_referencia, mat_codigo';
 begin
   Result := LerEntidade<TReferencia, TVariacao>(SQL, SQL_VARIACOES,
     procedure(AQuery: IQuery)
@@ -154,12 +165,17 @@ begin
     function(AQuery: IQuery): TDictionary < string, TObjectList < TVariacao >>
     var
       LVariacao: TVariacao;
+      LOrdem: integer;
     begin
       Result := TDictionary < string, TObjectList < TVariacao >>.Create;
+      LOrdem := 1;
       while not AQuery.EOF do
       begin
         if not Result.ContainsKey(AQuery.FieldByName('MAT_REFERENCIA').AsString) then
+        begin
           Result.Add(AQuery.FieldByName('MAT_REFERENCIA').AsString, TObjectList<TVariacao>.Create);
+          LOrdem := 1;
+        end;
 
         LVariacao := TVariacao.Create;
         LVariacao.ID := AQuery.FieldByName('MAT_CODIGO').AsString;
@@ -177,8 +193,11 @@ begin
         LVariacao.Preco := AQuery.FieldByName('PRE_PRECO1').AsCurrency;
         LVariacao.Exibir := (AQuery.FieldByName('MAT_EXIBIR').AsInteger in [1, 3]);
         LVariacao.Descricao := 'COR: ' + LVariacao.CorStr + '; TAMANHO: ' + LVariacao.TamanhoStr;
+        LVariacao.Ordem := LOrdem;
 
         Result[AQuery.FieldByName('MAT_REFERENCIA').AsString].Add(LVariacao);
+
+        Inc(LOrdem);
 
         AQuery.Next;
       end;
@@ -272,6 +291,8 @@ begin
           LVariacao.ID_Bling := LVariacaoTmp.ID_Bling;
 
           LVariacao.Exibir := LVariacaoTmp.Exibir;
+          LVariacao.Ordem := LVariacaoTmp.Ordem;
+
           LReferencia.Variacoes.Add(LVariacao);
         end;
       end;
@@ -328,6 +349,8 @@ begin
       AQuery.ParamByName('PREF_UNIDADE').AsStrings(AIndex, LReferencia.Unidade);
       AQuery.ParamByName('PREF_EXIBIR').AsIntegers(AIndex, IfThen(LReferencia.Exibir, 1, 0));
       AQuery.ParamByName('PREF_INATIVO2').AsIntegers(AIndex, IfThen(LReferencia.Inativo, 1, 0));
+
+      FVariacoes.Persistir(LReferencia.Variacoes);
     end,
     procedure(LReferencia: TReferencia; AIndex: Integer; AQuery: IQuery)
     begin

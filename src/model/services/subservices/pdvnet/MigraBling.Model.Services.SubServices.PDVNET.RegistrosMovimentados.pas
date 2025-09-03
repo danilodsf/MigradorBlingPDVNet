@@ -144,7 +144,7 @@ begin
   FPrecos := TDAOPrecosPDVNET.Create(FConexao, AConfigurador);
   FVariacoes := TDAOVariacoesPDVNET.Create(FConexao);
   FReferencias := TDAOReferenciasPDVNET.Create(FConexao);
-  FSaldos := TDAOSaldosPDVNET.Create(FConexao, AConfigurador);
+  FSaldos := TDAOSaldosPDVNET.Create(FConexao);
 end;
 
 procedure TPDVNETRegistrosMovimentados.DestruirObjetos;

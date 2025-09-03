@@ -17,7 +17,7 @@ type
   private
     FConexao: IConexao;
   public
-    function Ler: TObjectList<TFilial>;
+    function Ler: TObjectList<TFilial>; overload;
     constructor Create(AConexao: IConexao);
   end;
 

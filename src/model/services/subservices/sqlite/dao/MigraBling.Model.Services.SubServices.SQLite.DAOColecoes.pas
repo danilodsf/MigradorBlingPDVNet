@@ -17,7 +17,8 @@ uses
 type
   TDAOColecoesSQLite = class(TDaoSQLite, IDAOTabelasSQLite<TColecao>)
   public
-    function Ler: TObjectList<TColecao>;
+    function Ler: TObjectList<TColecao>; overload;
+    function Ler(AID: string): TColecao; overload;
     procedure Persistir(AListObj: TObjectList<TColecao>);
     procedure GravarIDsBling(AListObj: TObjectList<TColecao>);
     constructor Create(AConexao: IConexao);
@@ -48,6 +49,11 @@ begin
     begin
       AQuery.ParamByName('PID_BLING').AsString := AColecao.ID_CampoCustomizavel;
     end, 'Coleções');
+end;
+
+function TDAOColecoesSQLite.Ler(AID: string): TColecao;
+begin
+  Result := nil;
 end;
 
 function TDAOColecoesSQLite.Ler: TObjectList<TColecao>;

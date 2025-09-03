@@ -21,7 +21,7 @@ type
     FConexao: IConexao;
     FConfigurador: ISQLiteService;
   public
-    function Ler: TObjectList<TPreco>;
+    function Ler: TObjectList<TPreco>; overload;
     constructor Create(AConexao: IConexao; AConfigurador: ISQLiteService);
   end;
 
