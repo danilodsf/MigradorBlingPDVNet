@@ -301,27 +301,14 @@ begin
 end;
 
 procedure TSQLiteRegistrosMovimentados.LerDadosProdutos;
-var
-  Tasks: TArray<ITask>;
 begin
-  SetLength(Tasks, 2);
+  FBuscarReferencias := FReferencias.Ler;
+  TLogSubject.GetInstance.NotifyAll('Lendo referências (' + FBuscarReferencias.Count.ToString +
+    ') no SQLite');
 
-  Tasks[0] := TAppControl.SafeTask(
-    procedure
-    begin
-      FBuscarReferencias := FReferencias.Ler;
-      TLogSubject.GetInstance.NotifyAll('Lendo referências (' + FBuscarReferencias.Count.ToString +
-        ') no SQLite');
-    end);
-  Tasks[1] := TAppControl.SafeTask(
-    procedure
-    begin
-      FBuscarSaldos := FSaldos.Ler;
-      TLogSubject.GetInstance.NotifyAll('Lendo saldos (' + FBuscarSaldos.Count.ToString +
-        ') no SQLite');
-    end);
-
-  TTask.WaitForAll(Tasks);
+  FBuscarSaldos := FSaldos.Ler;
+  TLogSubject.GetInstance.NotifyAll('Lendo saldos (' + FBuscarSaldos.Count.ToString +
+    ') no SQLite');
 end;
 
 procedure TSQLiteRegistrosMovimentados.LimparMovimentos;

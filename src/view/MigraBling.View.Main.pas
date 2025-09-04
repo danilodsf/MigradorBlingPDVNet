@@ -11,6 +11,7 @@ uses
   System.UITypes,
   Vcl.Graphics,
   Vcl.Controls,
+  Data.DB,
   Vcl.Forms,
   Vcl.Dialogs,
   Vcl.StdCtrls,
@@ -18,10 +19,16 @@ uses
   Vcl.Menus,
   Vcl.ComCtrls,
   Vcl.Buttons,
+  Vcl.Samples.Spin,
+  Vcl.CheckLst,
+  System.Threading,
+  System.Generics.Collections,
   MigraBling.Controller.Interfaces.Sincronizador,
-  MigraBling.Model.Utils, Vcl.Samples.Spin, System.Threading, Vcl.CheckLst,
-  System.Generics.Collections, MigraBling.Model.Filiais,
-  MigraBling.Model.AppControl, MigraBling.Model.LogObserver;
+  MigraBling.View.SincronizarReferencia,
+  MigraBling.Model.Utils,
+  MigraBling.Model.Filiais,
+  MigraBling.Model.AppControl,
+  MigraBling.Model.LogObserver;
 
 type
   TStatusControles = (scReading, scEditing);
@@ -87,6 +94,7 @@ type
     PopupMenu1: TPopupMenu;
     Abrir1: TMenuItem;
     Sair1: TMenuItem;
+    btnSincronizarReferencia: TBitBtn;
     procedure FormCreate(Sender: TObject);
     procedure rgAtivarSincronizadorClick(Sender: TObject);
     procedure btnAlterarClick(Sender: TObject);
@@ -100,6 +108,7 @@ type
     procedure Sair1Click(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormResize(Sender: TObject);
+    procedure btnSincronizarReferenciaClick(Sender: TObject);
   private
     FSincronizador: ISincronizadorController;
     FSistemaConfigurado: Boolean;
@@ -179,6 +188,36 @@ begin
   except
     on E: Exception do
       TLogSubject.GetInstance.NotifyAll(E.Message);
+  end;
+end;
+
+procedure TFrmMain.btnSincronizarReferenciaClick(Sender: TObject);
+var
+  LReferenciasAtualizar: TList<string>;
+begin
+  FrmSincReferencia := TFrmSincReferencia.Create(nil);
+  try
+    if FrmSincReferencia.ShowModal(FSincronizador.BuscarReferencias) = mrOK then
+    begin
+      FrmSincReferencia.cdsReferencias.Filter := 'X = ''S'' ';
+      FrmSincReferencia.cdsReferencias.Filtered := true;
+      FrmSincReferencia.cdsReferencias.First;
+
+      if not FrmSincReferencia.cdsReferencias.IsEmpty then
+      begin
+        LReferenciasAtualizar := TList<string>.Create;
+        while not FrmSincReferencia.cdsReferencias.Eof do
+        begin
+          LReferenciasAtualizar.Add(FrmSincReferencia.cdsReferenciasREF_REFERENCIA.AsString.
+            QuotedString);
+          FrmSincReferencia.cdsReferencias.Next;
+        end;
+        FSincronizador.SincronizarReferencias(LReferenciasAtualizar);
+        btnSincronizarClick(Sender);
+      end;
+    end;
+  finally
+    FreeAndNil(FrmSincReferencia);
   end;
 end;
 
@@ -343,7 +382,7 @@ var
 begin
   idTabelaPreco := 0;
 
-  if rgPrecoTabela.ItemIndex >=0 then
+  if rgPrecoTabela.ItemIndex >= 0 then
     idTabelaPreco := integer(rgPrecoTabela.Items.Objects[rgPrecoTabela.ItemIndex]);
 
   FSincronizador.GravarConfiguracoes(edtIPSQLServer.Text, edtBancoSQLServer.Text,
@@ -378,6 +417,7 @@ end;
 
 procedure TFrmMain.SistemaSincronizando(AValue: Boolean);
 begin
+  btnSincronizarReferencia.Enabled := (not AValue);
   btnSincronizar.Enabled := (not AValue);
   lblProximaSinc.Visible := (not AValue);
   lblProximaSincronizacao.Visible := (not AValue);
@@ -450,4 +490,3 @@ begin
 end;
 
 end.
-

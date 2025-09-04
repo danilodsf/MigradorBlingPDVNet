@@ -4,7 +4,7 @@
         <ProjectVersion>20.3</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <ProjectName Condition="'$(ProjectName)'==''">MigraBling</ProjectName>
         <TargetedPlatforms>3</TargetedPlatforms>
@@ -136,9 +136,9 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=SplitFashion;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.50;InternalName=Migrador PDVNet Bling;LegalCopyright=;LegalTrademarks=;OriginalFilename=Migrador PDVNet Bling;ProgramID=$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=SplitFashion;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.53;InternalName=Migrador PDVNet Bling;LegalCopyright=;LegalTrademarks=;OriginalFilename=Migrador PDVNet Bling;ProgramID=$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <Icon_MainIcon>assets\img\ico.ico</Icon_MainIcon>
-        <VerInfo_Build>50</VerInfo_Build>
+        <VerInfo_Build>53</VerInfo_Build>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -250,6 +250,10 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="src\model\adapter\query\MigraBling.Model.QueryADO.pas"/>
         <DCCReference Include="src\model\adapter\query\MigraBling.Model.QueryParamADO.pas"/>
         <DCCReference Include="src\model\adapter\query\interfaces\MigraBling.Model.Interfaces.QueryParamArraySource.pas"/>
+        <DCCReference Include="src\view\MigraBling.View.SincronizarReferencia.pas">
+            <Form>FrmSincReferencia</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -291,6 +295,12 @@ $(PostBuildEvent)]]></PostBuildEvent>
                 <DeployFile LocalName="bin\MigraBling.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win64">
                         <RemoteName>MigraBling.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="bin\MigraBling.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win64">
+                        <RemoteName>MigraBling.rsm</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

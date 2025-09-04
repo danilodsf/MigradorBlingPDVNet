@@ -9,21 +9,27 @@ uses
   Rest.Types,
   Rest.JSON,
   System.SysUtils,
+  System.Classes,
+  System.Threading,
+  System.Generics.Collections,
   MigraBling.Model.Referencias,
   MigraBling.Model.Interfaces.DAO,
-  System.Generics.Collections,
   MigraBling.Model.Services.SubServices.Interfaces.Auth,
   MigraBling.Model.LogObserver,
   MigraBling.Model.Utils,
   MigraBling.Model.Services.SubServices.Bling.Response,
-  System.Classes, MigraBling.Model.Variacoes, System.Threading,
-  MigraBling.Model.AppControl, MigraBling.Model.BaseModel;
+  MigraBling.Model.Variacoes,
+  MigraBling.Model.AppControl,
+  MigraBling.Model.BaseModel,
+  MigraBling.Model.Services.SubServices.Bling.DAOSaldos,
+  MigraBling.Model.Saldos;
 
 type
   TDAOReferenciasBling = class(TInterfacedObject, IDAOBling<TReferencia>,
     IDAOBlingReferencias<TReferencia>)
   private
     FAuth: IModelAuth;
+    FSaldos: IDAOBling<TSaldo>;
     procedure Criar(AObj: TReferencia);
     procedure Apagar(AObj: TBaseModel; ACodProduto: string); overload;
     procedure Apagar(AID: string); overload;
@@ -98,6 +104,7 @@ end;
 constructor TDAOReferenciasBling.Create(AAuth: IModelAuth);
 begin
   FAuth := AAuth;
+  FSaldos := TDAOSaldosBling.Create(FAuth);
 end;
 
 procedure TDAOReferenciasBling.AdicionarCampoCustomizado(AIDBling, ACampo, AVinculo,
@@ -535,6 +542,7 @@ begin
     procedure
     var
       I: Integer;
+      LVariacao: TVariacao;
     begin
       for I := 0 to Pred(AListObj.Count) do
       begin
@@ -545,12 +553,18 @@ begin
           TLogSubject.GetInstance.NotifyAll('Inserindo referência: ' + AListObj[I].referencia + ' '
             + IntToStr(I + 1) + ' de ' + AListObj.Count.ToString);
           Criar(AListObj[I]);
+
+          for LVariacao in AListObj[I].Variacoes do
+            FSaldos.Persistir(LVariacao.Saldos);
         end
         else if ((AListObj[I].TipoReg = 'U') and (AListObj[I].ID_Bling <> '')) then
         begin
           TLogSubject.GetInstance.NotifyAll('Atualizando referência: ' + AListObj[I].referencia +
             ' ' + IntToStr(I + 1) + ' de ' + AListObj.Count.ToString);
           Atualizar(AListObj[I]);
+
+          for LVariacao in AListObj[I].Variacoes do
+            FSaldos.Persistir(LVariacao.Saldos);
         end
         else if ((AListObj[I].TipoReg = 'D') and (AListObj[I].ID_Bling <> '')) then
         begin

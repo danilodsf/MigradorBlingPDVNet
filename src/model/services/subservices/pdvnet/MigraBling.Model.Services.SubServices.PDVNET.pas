@@ -17,6 +17,7 @@ uses
   MigraBling.Model.Services.SubServices.PDVNET.RegistrosMovimentados,
   MigraBling.Model.Services.SubServices.Connection,
   MigraBling.Model.LogObserver,
+  MigraBling.Model.Referencias,
   MigraBling.Model.ConexaoProvider,
   MigraBling.Model.Utils,
   MigraBling.Model.TabelaDados, Vcl.Dialogs;
@@ -46,6 +47,8 @@ type
     function TestarConexaoSQLServer: Boolean;
     function BuscarFiliais: TDictionary<integer, string>;
     function BuscarTabelasDePreco: TOrderedDictionary<integer, string>;
+    function BuscarReferencias: TObjectList<TReferencia>;
+    procedure SincronizarReferencias(AReferencias: TList<string>);
     constructor Create(AConfigurador: ISQLiteService);
   end;
 
@@ -67,6 +70,44 @@ begin
   begin
     Result.Add(LQuery.FieldByName('FIL_CODIGO').AsInteger, LQuery.FieldByName('FIL_RAZAO_SOCIAL')
       .AsString);
+    LQuery.Next;
+  end;
+end;
+
+function TPDVNETService.BuscarReferencias: TObjectList<TReferencia>;
+var
+  LQuery: IQuery;
+  LReferencia: TReferencia;
+begin
+  Result := TObjectList<TReferencia>.Create;
+
+  LQuery := TQueryFactory.New.GetQuery(FConexao.Clone);
+  LQuery.SQL.Text := ' SELECT REF_DESCRICAO, REF_REFERENCIA, ' +
+    'GRUM_DESCRICAO, MOD_DESCRICAO, MAP_DESCRICAO, COL_DESCRICAO, LIN_DESCRICAO ' +
+    'FROM REFERENCIAS R ' +
+    'LEFT JOIN REFERENCIASITE on ((RES_COLECAO = REF_COLECAO) and (RES_REFERENCIA = REF_REFERENCIA)) '
+    + 'LEFT JOIN NCM on (REF_NCM = NCM_CODIGO) LEFT JOIN UNIDADES on (REF_UNIDADE2 = UNI_CODIGO) ' +
+    'LEFT JOIN MATERIAPRIMA MAP ON (MAP_CODIGO = REF_MATERIA) ' +
+    'LEFT JOIN GRUPOMATERIAIS GRUM ON (GRUM_CODIGO = REF_GRUPO) ' +
+    'LEFT JOIN LINHA LIN ON (LIN_CODIGO = REF_LINHA) ' +
+    'LEFT JOIN COLECOES COL ON (COL_CODIGO = REF_COLECAO) ' +
+    'LEFT JOIN MODELOS MOD ON (MOD_CODIGO = REF_MODELO) ' +
+    'WHERE REF_DESCRICAO <> '''' AND REF_SITE = 1 AND RES_NOME <> '''' ' + 'AND REF_INATIVO2 = 0 ' +
+    'ORDER BY REF_REFERENCIA';
+  LQuery.Open;
+
+  while not LQuery.EOF do
+  begin
+    LReferencia := TReferencia.Create;
+    LReferencia.Referencia := LQuery.FieldByName('REF_REFERENCIA').AsString.Trim;
+    LReferencia.Nome := LQuery.FieldByName('REF_DESCRICAO').AsString.Trim;
+    LReferencia.Departamento := LQuery.FieldByName('GRUM_DESCRICAO').AsString.Trim;
+    LReferencia.Categoria := LQuery.FieldByName('MOD_DESCRICAO').AsString.Trim;
+    LReferencia.Grupo := LQuery.FieldByName('MAP_DESCRICAO').AsString.Trim;
+    LReferencia.Colecao := LQuery.FieldByName('COL_DESCRICAO').AsString.Trim;
+    LReferencia.Material := LQuery.FieldByName('LIN_DESCRICAO').AsString.Trim;
+
+    Result.Add(LReferencia);
     LQuery.Next;
   end;
 end;
@@ -248,6 +289,31 @@ begin
   FBuscarMovimentos.LimparMovimentos;
 end;
 
+procedure TPDVNETService.SincronizarReferencias(AReferencias: TList<string>);
+var
+  LQuery: IQuery;
+  LReferencia: string;
+begin
+  try
+    LQuery := TQueryFactory.New.GetQuery(FConexao.Clone);
+    LQuery.SQL.Text := ' INSERT INTO MOVIMENTOS_MIGRAR_BLING (ID_REG, TABELA, TIPO) VALUES ';
+
+    for LReferencia in AReferencias do
+    begin
+      LQuery.SQL.Add('( ' + LReferencia + ',''REFERENCIAS'',''U'' )' +
+        IfThen(LReferencia = AReferencias.Last, ';', ','));
+    end;
+
+    LQuery.SQL.Text := LQuery.SQL.Text.Trim;
+    LQuery.SQL.Text := Copy(LQuery.SQL.Text, 1, Length(LQuery.SQL.Text) - 1);
+
+    if AReferencias.Count > 0 then
+      LQuery.ExecSQL;
+  finally
+    AReferencias.Free;
+  end;
+end;
+
 procedure TPDVNETService.DadosTabela(AListaTabelas: TDictionary<string, TTabelaDados>;
   ATabelaOrigem, ATabelaDestino, APKValue, ACondicaoInserirDadosInicial: string;
   APKComposto: string = '');
@@ -279,7 +345,7 @@ begin
     LQuery := TQueryFactory.New.GetQuery(FConexao);
     LQuery.Close;
     LQuery.SQL.Text := 'UPDATE ' + ATabelaOrigem + ' SET ' + ATabelaDados.PK + ' = ' +
-      ATabelaDados.PK + ifThen(LCondicao <> '', ' WHERE ' + LCondicao, '');
+      ATabelaDados.PK + IfThen(LCondicao <> '', ' WHERE ' + LCondicao, '');
     LQuery.ExecSQL;
     TLogSubject.GetInstance.NotifyAll('Criando registros de movimentações no PDVNET');
   except

@@ -108,7 +108,8 @@ uses
   MigraBling.Model.ConexaoProvider in 'src\model\classes\MigraBling.Model.ConexaoProvider.pas',
   MigraBling.Model.QueryADO in 'src\model\adapter\query\MigraBling.Model.QueryADO.pas',
   MigraBling.Model.QueryParamADO in 'src\model\adapter\query\MigraBling.Model.QueryParamADO.pas',
-  MigraBling.Model.Interfaces.QueryParamArraySource in 'src\model\adapter\query\interfaces\MigraBling.Model.Interfaces.QueryParamArraySource.pas';
+  MigraBling.Model.Interfaces.QueryParamArraySource in 'src\model\adapter\query\interfaces\MigraBling.Model.Interfaces.QueryParamArraySource.pas',
+  MigraBling.View.SincronizarReferencia in 'src\view\MigraBling.View.SincronizarReferencia.pas' {FrmSincReferencia};
 
 {$R *.res}
 
