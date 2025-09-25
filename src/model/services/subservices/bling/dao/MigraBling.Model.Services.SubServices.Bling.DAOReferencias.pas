@@ -536,7 +536,7 @@ procedure TDAOReferenciasBling.Persistir(AListObj: TObjectList<TReferencia>);
 var
   Tasks: TArray<ITask>;
 begin
-  CorrigirTudo(AListObj);
+  //CorrigirTudo(AListObj);
   SetLength(Tasks, 1);
   Tasks[0] := TAppControl.SafeTask(
     procedure
