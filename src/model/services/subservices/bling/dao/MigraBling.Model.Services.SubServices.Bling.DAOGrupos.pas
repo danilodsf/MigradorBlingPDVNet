@@ -117,8 +117,11 @@ begin
 
       errorResponse := TJSON.JsonToObject<TResponseError>(Response.Content);
 
-      raise Exception.Create(errorResponse.error.message + ' ' + 'Grupos' + '. ' +
-        errorResponse.allErrors);
+      if Assigned(errorResponse.error) then
+        raise Exception.Create(errorResponse.error.message + ' ' + 'Grupos' + '. ' +
+          errorResponse.allErrors)
+      else
+        raise Exception.Create(Response.Content);
     except
       on E: Exception do
       begin
@@ -172,8 +175,11 @@ begin
 
       errorResponse := TJSON.JsonToObject<TResponseError>(Response.Content);
 
-      raise Exception.Create(errorResponse.error.message + ' ' + 'Grupos' + '. ' +
-        errorResponse.allErrors);
+      if Assigned(errorResponse.error) then
+        raise Exception.Create(errorResponse.error.message + ' ' + 'Grupos' + '. ' +
+          errorResponse.allErrors)
+      else
+        raise Exception.Create(Response.Content);
     except
       on E: Exception do
       begin

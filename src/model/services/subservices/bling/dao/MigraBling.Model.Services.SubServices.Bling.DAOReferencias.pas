@@ -33,6 +33,7 @@ type
     procedure Criar(AObj: TReferencia);
     procedure Apagar(AObj: TBaseModel; ACodProduto: string); overload;
     procedure Apagar(AID: string); overload;
+    procedure Apagar(AIDs: TList<string>); overload;
     procedure Atualizar(AObj: TReferencia);
     function Ler(AID: string): TJSONObject; overload;
     function Ler: TJSONObject; overload;
@@ -40,10 +41,12 @@ type
     procedure AdicionarCampoCustomizado(AIDBling, ACampo, AVinculo, ADescricao: string;
       AJsonArray: TJSONArray; AExibirIDs: Boolean);
     function LocalizarEAtualizarProduto(const AReferencia: string): string;
+    function LerExcluidos(APagina: integer): TJSONObject;
   public
     procedure Persistir(AListObj: TObjectList<TReferencia>);
     procedure ApagarTudo;
     procedure CorrigirTudo(AListObj: TObjectList<TReferencia>);
+    procedure RemoverExcluidos;
     constructor Create(AAuth: IModelAuth);
   end;
 
@@ -59,7 +62,7 @@ var
   referencia: TReferencia;
   JSONArrayCampos: TJSONArray;
   JSONLeitura, JSONCampo: TJSONObject;
-  I: Integer;
+  I: integer;
 begin
   // só é usado para ajustar registros que gravaram errado
   exit;
@@ -185,7 +188,7 @@ begin
 
   Result.AddPair('camposCustomizados', JSONArrayCampos);
 
-  //GravarLogTeste(Result.ToJSON);
+  // GravarLogTeste(Result.ToJSON);
 
   if AObj.Variacoes.Count > 0 then
   begin
@@ -214,7 +217,7 @@ begin
         begin
           if (variacao.ID_Bling = '') then
             variacao.ID_Bling := LocalizarEAtualizarProduto(variacao.ID);
-            Sleep(1000);
+          Sleep(1000);
 
           JSONBodyVariacao.AddPair('id', variacao.ID_Bling);
         end;
@@ -268,10 +271,10 @@ begin
 
         JSONBodyVariacao.AddPair('camposCustomizados', JSONArrayCamposVariacoes);
 
-        JSONBodyVariacao.AddPair('variacao', TJSONObject.Create.AddPair('nome',
-          variacao.Descricao).AddPair('ordem',variacao.Ordem));
+        JSONBodyVariacao.AddPair('variacao', TJSONObject.Create.AddPair('nome', variacao.Descricao)
+          .AddPair('ordem', variacao.Ordem));
 
-        //GravarLogTeste(JSONBodyVariacao.ToJSON);
+        // GravarLogTeste(JSONBodyVariacao.ToJSON);
 
         JSONArrayVariacoes.Add(JSONBodyVariacao);
       end;
@@ -291,8 +294,8 @@ var
   JSONArrayCampos, JSONSaved: TJSONArray;
   errorResponse: TResponseError;
   variacao: TVariacao;
-  I: Integer;
-  Referencia: string;
+  I: integer;
+  referencia: string;
 begin
   if AObj.Inativo or AObj.Nome.IsEmpty or (not AObj.Exibir) or (AObj.Nome = 'EXCLUIR') then
   begin
@@ -304,10 +307,10 @@ begin
   try
     try
       JSONEnvio := ObterJSONProduto(AObj);
-      Referencia := JSONEnvio.GetValue<string>('codigo');
+      referencia := JSONEnvio.GetValue<string>('codigo');
       Response := TRequest.New.BaseURL(C_BASEURL + C_PRODUTOS).Accept(C_ACCEPT)
-        .ContentType(CONTENTTYPE_APPLICATION_JSON).TokenBearer(FAuth.AccessToken)
-        .AddBody(JSONEnvio).OnAfterExecute(
+        .ContentType(CONTENTTYPE_APPLICATION_JSON).TokenBearer(FAuth.AccessToken).AddBody(JSONEnvio)
+        .OnAfterExecute(
         procedure(const Req: IRequest; const Res: IResponse)
         begin
           FAuth.AtualizarToken(Req, Res);
@@ -366,13 +369,16 @@ begin
 
       if errorResponse.AllErrors.Contains('já foi cadastrado para o produto') then
       begin
-        AObj.ID_Bling := LocalizarEAtualizarProduto(Referencia);
+        AObj.ID_Bling := LocalizarEAtualizarProduto(referencia);
         if AObj.ID_Bling <> '' then
           exit;
       end;
 
-      raise Exception.Create(errorResponse.error.Message + ' - ' + errorResponse.error.description +
-        ' - ' + 'Referências' + '. ' + errorResponse.AllErrors);
+      if Assigned(errorResponse.error) then
+        raise Exception.Create(errorResponse.error.Message + ' - ' + errorResponse.error.description
+          + ' - ' + 'Referências' + '. ' + errorResponse.AllErrors)
+      else
+        raise Exception.Create(Response.Content);
     except
       on E: Exception do
       begin
@@ -401,6 +407,25 @@ begin
   Result := TJSONObject.ParseJSONValue(Response.Content) as TJSONObject;
 end;
 
+function TDAOReferenciasBling.LerExcluidos(APagina: integer): TJSONObject;
+var
+  Response: IResponse;
+begin
+  try
+    Response := TRequest.New.BaseURL(C_BASEURL + C_PRODUTOS).AddParam('pagina', APagina.ToString)
+      .AddParam('limite', '100').AddParam('criterio', '4').AddParam('tipo', 'T').Accept(C_ACCEPT)
+      .ContentType(CONTENTTYPE_APPLICATION_JSON).TokenBearer(FAuth.AccessToken).OnAfterExecute(
+      procedure(const Req: IRequest; const Res: IResponse)
+      begin
+        FAuth.AtualizarToken(Req, Res);
+      end).Get;
+
+    Result := TJSONObject.ParseJSONValue(Response.Content) as TJSONObject;
+  finally
+    Sleep(1000);
+  end;
+end;
+
 function TDAOReferenciasBling.Ler: TJSONObject;
 var
   Response: IResponse;
@@ -421,7 +446,7 @@ begin
   TAppControl.SafeTask(
     procedure
     var
-      I: Integer;
+      I: integer;
       JSON: TJSONObject;
       JSONArray: TJSONArray;
     begin
@@ -451,7 +476,7 @@ var
   JSONArrayUpdated, JSONArraySaved: TJSONArray;
   errorResponse: TResponseError;
   variacao: TVariacao;
-  I: Integer;
+  I: integer;
 begin
   if (not AObj.Exibir) then
   begin
@@ -472,8 +497,8 @@ begin
       JSONEnvio := ObterJSONProduto(AObj, true);
 
       Response := TRequest.New.BaseURL(C_BASEURL + C_PRODUTOS + AObj.ID_Bling).Accept(C_ACCEPT)
-        .ContentType(CONTENTTYPE_APPLICATION_JSON).TokenBearer(FAuth.AccessToken)
-        .AddBody(JSONEnvio).OnAfterExecute(
+        .ContentType(CONTENTTYPE_APPLICATION_JSON).TokenBearer(FAuth.AccessToken).AddBody(JSONEnvio)
+        .OnAfterExecute(
         procedure(const Req: IRequest; const Res: IResponse)
         begin
           FAuth.AtualizarToken(Req, Res);
@@ -517,9 +542,11 @@ begin
 
       errorResponse := TJSON.JsonToObject<TResponseError>(Response.Content);
 
-      raise Exception.Create(errorResponse.error.Message + ' - ' + errorResponse.error.description +
-        ' - ' + 'Referências' + '. ' + errorResponse.AllErrors);
-
+      if Assigned(errorResponse.error) then
+        raise Exception.Create(errorResponse.error.Message + ' - ' + errorResponse.error.description
+          + ' - ' + 'Referências' + '. ' + errorResponse.AllErrors)
+      else
+        raise Exception.Create(Response.Content);
 
     except
       on E: Exception do
@@ -536,12 +563,12 @@ procedure TDAOReferenciasBling.Persistir(AListObj: TObjectList<TReferencia>);
 var
   Tasks: TArray<ITask>;
 begin
-  //CorrigirTudo(AListObj);
+  // CorrigirTudo(AListObj);
   SetLength(Tasks, 1);
   Tasks[0] := TAppControl.SafeTask(
     procedure
     var
-      I: Integer;
+      I: integer;
       LVariacao: TVariacao;
     begin
       for I := 0 to Pred(AListObj.Count) do
@@ -573,9 +600,62 @@ begin
           Apagar(AListObj[I], AListObj[I].referencia);
         end;
       end;
+
+      RemoverExcluidos;
     end);
 
   TTask.WaitForAll(Tasks);
+end;
+
+procedure TDAOReferenciasBling.RemoverExcluidos;
+var
+  LProdutosExcluidos: TJSONObject;
+  LArrayProdutosExcluidos: TJSONArray;
+  LProdutoExcluido: TJSONValue;
+  LCodigosExcluidos: TList<string>;
+  LPagina: integer;
+begin
+  LCodigosExcluidos := TList<string>.Create;
+  LPagina := 1;
+  try
+    while true do
+    begin
+      LProdutosExcluidos := LerExcluidos(1);
+      try
+        if not Assigned(LProdutosExcluidos) then
+          break;
+
+        LArrayProdutosExcluidos := LProdutosExcluidos.GetValue<TJSONArray>('data');
+
+        if not Assigned(LArrayProdutosExcluidos) then
+          break;
+
+        if LArrayProdutosExcluidos.IsEmpty then
+          break;
+
+        TLogSubject.GetInstance.NotifyAll('Limpando registros excluídos - Página: ' +
+          LPagina.ToString);
+
+        for LProdutoExcluido in LArrayProdutosExcluidos do
+        begin
+          if LProdutoExcluido is TJSONObject then
+            LCodigosExcluidos.Add(LProdutoExcluido.GetValue<string>('id'))
+        end;
+
+        if (not LCodigosExcluidos.IsEmpty) then
+        begin
+          Apagar(LCodigosExcluidos);
+          LCodigosExcluidos.Clear;
+        end;
+
+        Inc(LPagina);
+      finally
+        LProdutosExcluidos.Free;
+      end;
+    end;
+  finally
+    LCodigosExcluidos.Free;
+  end;
 end;
 
 procedure TDAOReferenciasBling.Apagar(AObj: TBaseModel; ACodProduto: string);
@@ -622,13 +702,19 @@ begin
 
             errorResponse := TJSON.JsonToObject<TResponseError>(Response.Content);
 
-            if errorResponse.error.&type = 'RESOURCE_NOT_FOUND' then
+            if Assigned(errorResponse.error) and (errorResponse.error.&type = 'RESOURCE_NOT_FOUND')
+            then
             begin
               AObj.ID_Bling := 'EXCLUIR';
               exit;
             end;
 
-            raise Exception.Create(Response.Content);
+            if Assigned(errorResponse.error) then
+              raise Exception.Create(errorResponse.error.Message + ' - ' +
+                errorResponse.error.description + ' - ' + 'Referências' + '. ' +
+                errorResponse.AllErrors)
+            else
+              raise Exception.Create(Response.Content);
           except
             on E: Exception do
             begin
@@ -642,6 +728,72 @@ begin
       end);
   finally
     Sleep(1000);
+  end;
+end;
+
+procedure TDAOReferenciasBling.Apagar(AIDs: TList<string>);
+var
+  errorResponse: TResponseError;
+begin
+  if AIDs.IsEmpty then
+    exit;
+
+  errorResponse := nil;
+  try
+    TAppControl.SafeTask(
+      procedure
+      var
+        Response: IResponse;
+        LID: string;
+        LBaseURL: string;
+        LRequest: IRequest;
+      begin
+        if TAppControl.AppFinalizando then
+          exit;
+        try
+          LBaseURL := C_BASEURL + C_PRODUTOS;
+          LBaseURL := Copy(LBaseURL, 1, Length(LBaseURL) - 1) + '?';
+
+          for LID in AIDs do
+            LBaseURL := LBaseURL + 'idsProdutos[]=' + LID + '&';
+
+          LBaseURL := Copy(LBaseURL, 1, Length(LBaseURL) - 1);
+
+          LRequest := TRequest.New.BaseURL(LBaseURL).Accept(C_ACCEPT)
+            .ContentType(CONTENTTYPE_APPLICATION_JSON).TokenBearer(FAuth.AccessToken)
+            .OnAfterExecute(
+            procedure(const Req: IRequest; const Res: IResponse)
+            begin
+              FAuth.AtualizarToken(Req, Res);
+            end);
+
+          Response := LRequest.Delete;
+
+          if Response.StatusCode = 204 then
+          begin
+            TLogSubject.GetInstance.NotifyAll
+              ('Referências pendentes de exclusão apagadas com sucesso');
+            exit;
+          end;
+
+          errorResponse := TJSON.JsonToObject<TResponseError>(Response.Content);
+
+          if Assigned(errorResponse.error) and (errorResponse.error.&type = 'RESOURCE_NOT_FOUND')
+          then
+            exit;
+
+          raise Exception.Create(Response.Content);
+        except
+          on E: Exception do
+          begin
+            TLogSubject.GetInstance.NotifyAll('Não foi possível excluir o produto' + #13#10 +
+              E.Message);
+          end;
+        end;
+      end);
+  finally
+    FreeAndNil(errorResponse);
+    Sleep(10000);
   end;
 end;
 
@@ -684,7 +836,8 @@ begin
 
           errorResponse := TJSON.JsonToObject<TResponseError>(Response.Content);
 
-          if errorResponse.error.&type = 'RESOURCE_NOT_FOUND' then
+          if Assigned(errorResponse.error) and (errorResponse.error.&type = 'RESOURCE_NOT_FOUND')
+          then
           begin
             exit;
           end;
@@ -709,26 +862,25 @@ var
   Response: IResponse;
   AObj: TJSONObject;
 begin
-  result := '';
+  Result := '';
 
   Response := TRequest.New.BaseURL(C_BASEURL + C_PRODUTOS).Accept(C_ACCEPT)
-    .ContentType(CONTENTTYPE_APPLICATION_JSON)
-    .AddParam('codigos[]',AReferencia)
+    .ContentType(CONTENTTYPE_APPLICATION_JSON).AddParam('codigos[]', AReferencia)
     .TokenBearer(FAuth.AccessToken).OnAfterExecute(
     procedure(const Req: IRequest; const Res: IResponse)
     begin
       FAuth.AtualizarToken(Req, Res);
     end).Get;
 
-    if Response.StatusCode = 200 then
-    begin
-      AObj := TJSONObject.ParseJSONValue(Response.Content) as TJSONObject;
-      try
-        result := AObj.GetValue<TJSONArray>('data')[0].GetValue<string>('id');
-      finally
-        AObj.Free;
-      end;
+  if Response.StatusCode = 200 then
+  begin
+    AObj := TJSONObject.ParseJSONValue(Response.Content) as TJSONObject;
+    try
+      Result := AObj.GetValue<TJSONArray>('data')[0].GetValue<string>('id');
+    finally
+      AObj.Free;
     end;
+  end;
 
 end;
 

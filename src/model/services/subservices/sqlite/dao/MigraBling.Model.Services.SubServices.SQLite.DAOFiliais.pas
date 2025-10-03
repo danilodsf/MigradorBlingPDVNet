@@ -55,7 +55,7 @@ const
   SQL = 'SELECT F.FIL_CODIGO, F.FIL_RAZAO_SOCIAL, F.FIL_INATIVA, F.ID_BLING,' +
     'MMB.TIPO, MMB.ID_REG, MMB.ID ' +
     'FROM MOVIMENTOS_MIGRAR_BLING MMB LEFT JOIN FILIAL F ON (F.FIL_CODIGO = MMB.ID_REG) ' +
-    'WHERE MMB.TABELA = ''FILIAL'' ';
+    'WHERE MMB.TABELA = ''FILIAL'' AND FIL_CODIGO = 5';
 begin
   Result := LerEntidade<TFilial>(SQL,
     function(AQuery: IQuery): TFilial

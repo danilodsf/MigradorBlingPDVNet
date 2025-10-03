@@ -88,8 +88,11 @@ begin
           end;
 
           errorResponse := TJSON.JsonToObject<TResponseError>(Response.Content);
-          raise Exception.Create(errorResponse.error.message + ' - ' +
-            errorResponse.error.description + ' - ' + 'Estoques' + '. ' + errorResponse.allErrors);
+          if Assigned(errorResponse.error) then
+            raise Exception.Create(errorResponse.error.message + ' ' + 'Estoques' + '. ' +
+              errorResponse.allErrors)
+          else
+            raise Exception.Create(Response.Content);
         except
           on E: Exception do
           begin

@@ -200,7 +200,7 @@ begin
       if not Assigned(errorResponse) then
         Exit;
 
-      if errorResponse.error.&type = 'invalid_token' then
+      if Assigned(errorResponse.error) and (errorResponse.error.&type = 'invalid_token') then
       begin
         FConfiguracoes.ExpiresIn := IncMinute(Date, -1);
         FConfiguracoes.AccessToken := '';
