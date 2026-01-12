@@ -22,14 +22,17 @@ type
     function LerEntidade<T: class, constructor>(const ASQL: string;
       const AMapeador: TFunc<IQuery, T>): TObjectList<T>; overload;
 
+    function LerEntidade<T: class, constructor>(const ASQL, ASQL2: string;
+      const AMapeador: TFunc<IQuery, IQuery, T>): TObjectList<T>; overload;
+
     function LerEntidade<T: class, constructor>(const ASQL, ASQL2, ASQL3: string;
       const AMapeadorPrincipal: TProc<IQuery, boolean>;
       const AInserirDados: TProc<IQuery, IQuery, IQuery>; const AMapeador: TFunc<IQuery, T>)
       : TObjectList<T>; overload;
 
     function LerEntidade<T: class, constructor; TComp: class, constructor>(const ASQL,
-      ASQLComplementar, ASQLComplementar2: string;
-      const AMapeador: TFunc<IQuery, IQuery, IQuery, T>): TObjectList<T>; overload;
+      ASQLComplementar, ASQLComplementar2, ASQLComplementar3: string;
+      const AMapeador: TFunc<IQuery, IQuery, IQuery, IQuery, T>): TObjectList<T>; overload;
 
     function LerEntidade<T: class, constructor>(const ASQL: string;
       const AParametros: TProc<IQuery>; const AMapeador: TFunc<IQuery, T>): TObjectList<T>;
@@ -174,6 +177,37 @@ begin
   end;
 end;
 
+function TDaoSQLite.LerEntidade<T>(const ASQL, ASQL2: string; const AMapeador: TFunc<IQuery, IQuery, T>)
+  : TObjectList<T>;
+var
+  LQuery, LQuery2: IQuery;
+  LObj: T;
+begin
+  Result := nil;
+
+  if TAppControl.AppFinalizando then
+    Exit;
+
+  Result := TObjectList<T>.Create(True);
+
+  LQuery := TQueryFactory.New.GetQuery(FConexao.Clone);
+  LQuery.SQL.Text := ASQL;
+  LQuery.Open;
+
+  LQuery2 := TQueryFactory.New.GetQuery(FConexao.Clone);
+  LQuery2.SQL.Text := ASQL2;
+
+  while not LQuery.EOF do
+  begin
+    if TAppControl.AppFinalizando then
+      break;
+
+    LObj := AMapeador(LQuery, LQuery2);
+    Result.Add(LObj);
+    LQuery.Next;
+  end;
+end;
+
 function TDaoSQLite.LerEntidade<T>(const ASQL, ASQL2, ASQL3: string;
   const AMapeadorPrincipal: TProc<IQuery, boolean>;
   const AInserirDados: TProc<IQuery, IQuery, IQuery>; const AMapeador: TFunc<IQuery, T>)
@@ -252,10 +286,10 @@ begin
   end;
 end;
 
-function TDaoSQLite.LerEntidade<T, TComp>(const ASQL, ASQLComplementar, ASQLComplementar2: string;
-  const AMapeador: TFunc<IQuery, IQuery, IQuery, T>): TObjectList<T>;
+function TDaoSQLite.LerEntidade<T, TComp>(const ASQL, ASQLComplementar, ASQLComplementar2,
+  ASQLComplementar3: string; const AMapeador: TFunc<IQuery, IQuery, IQuery, IQuery, T>): TObjectList<T>;
 var
-  LQuery, LQuery2, LQuery3: IQuery;
+  LQuery, LQuery2, LQuery3, LQuery4: IQuery;
   LObj: T;
 begin
   Result := nil;
@@ -275,12 +309,15 @@ begin
   LQuery3 := TQueryFactory.New.GetQuery(FConexao.Clone);
   LQuery3.SQL.Text := ASQLComplementar2;
 
+  LQuery4 := TQueryFactory.New.GetQuery(FConexao.Clone);
+  LQuery4.SQL.Text := ASQLComplementar3;
+
   while not LQuery.EOF do
   begin
     if TAppControl.AppFinalizando then
       break;
 
-    LObj := AMapeador(LQuery, LQuery2, LQuery3);
+    LObj := AMapeador(LQuery, LQuery2, LQuery3, LQuery4);
     Result.Add(LObj);
     LQuery.Next;
   end;

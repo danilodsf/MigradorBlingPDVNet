@@ -42,17 +42,48 @@ implementation
 class procedure TCriadorBD.AtualizarVersao_1(AQuery: IQuery);
 begin
   try
-//    AQuery.Connection.StartTransaction;
-//
-//    AQuery.SQL.Clear;
-//    AQuery.SQL.Text := 'ATUALIZAR BANCO CASO SEJA NECESSARIO';
-//    AQuery.ExecSQL;
-//
-//    AQuery.SQL.Clear;
-//    AQuery.SQL.Text := 'UPDATE VERSAO SET NUMERO = 1';
-//    AQuery.ExecSQL;
-//
-//    AQuery.Connection.Commit;
+    AQuery.Connection.StartTransaction;
+
+    { Criar tabela de imagens de referencias }
+    AQuery.SQL.Clear;
+    AQuery.SQL.Text := 'CREATE TABLE "REFERENCIAS_IMAGENS" ( ' +
+      '	"ID"	INTEGER NOT NULL, "IMA_REFERENCIA"	TEXT NOT NULL, ' +
+      '	"IMA_SEQ"	INTEGER, "IMA_URL"	TEXT, ' +
+      '	PRIMARY KEY("ID" AUTOINCREMENT), UNIQUE("IMA_REFERENCIA","IMA_SEQ"))';
+    AQuery.ExecSQL;
+
+    { Adicionar campo para armazenar nome do banco auxiliar PDVNET }
+    AQuery.Close;
+    AQuery.SQL.Clear;
+    AQuery.SQL.Text := 'ALTER TABLE "CONFIGURACOES" ADD "IMAGENS_DATABASE"	TEXT';
+    AQuery.ExecSQL;
+
+    { Setar nome do banco auxiliar PDVNET }
+    AQuery.Close;
+    AQuery.SQL.Clear;
+    AQuery.SQL.Text := 'UPDATE "CONFIGURACOES" ' +
+      'SET IMAGENS_DATABASE = ''BDMATRIZSPLIT_AUXILIAR''';
+    AQuery.ExecSQL;
+
+    { Dropar tabela Versao para recriar com a PK }
+    AQuery.Close;
+    AQuery.SQL.Clear;
+    AQuery.SQL.Text := 'DROP TABLE VERSAO';
+    AQuery.ExecSQL;
+
+    { Dropar tabela Versao para recriar com a PK }
+    AQuery.Close;
+    AQuery.SQL.Clear;
+    AQuery.SQL.Text := 'CREATE TABLE "VERSAO" ("NUMERO"	INTEGER, PRIMARY KEY("NUMERO"))';
+    AQuery.ExecSQL;
+
+    { Atualizar numero da versão }
+    AQuery.SQL.Clear;
+    AQuery.SQL.Text := 'INSERT INTO VERSAO (NUMERO) VALUES (1) ' +
+      'ON CONFLICT(NUMERO) DO UPDATE SET NUMERO = excluded.NUMERO';
+    AQuery.ExecSQL;
+
+    AQuery.Connection.Commit;
   except
     on E: Exception do
     begin
@@ -377,7 +408,8 @@ begin
   AQuery.Connection.StartTransaction;
   AQuery.SQL.Clear;
   AQuery.SQL.Add('CREATE TABLE "VERSAO" (');
-  AQuery.SQL.Add('"NUMERO"	INTEGER)');
+  AQuery.SQL.Add('"NUMERO"	INTEGER,');
+  AQuery.SQL.Add('PRIMARY KEY("NUMERO"))');
   AQuery.ExecSQL;
   AQuery.SQL.Clear;
   AQuery.SQL.Add('INSERT INTO VERSAO(NUMERO) VALUES (0)');

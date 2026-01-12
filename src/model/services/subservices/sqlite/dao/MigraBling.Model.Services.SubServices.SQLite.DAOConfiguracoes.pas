@@ -112,7 +112,7 @@ begin
   LQuery.SQL.Text := 'SELECT ACCESS_TOKEN, REFRESH_TOKEN, EXPIRES_IN, CLIENT_ID, CLIENT_SECRET, ' +
     'PDVNET_SERVER, PDVNET_DATABASE, PDVNET_USERNAME, PDVNET_PASSWORD, TEMPO_SINRONIZACAO, ' +
     'ATIVAR, QTD_ESTOQUE_SUBIR, DT_ULTIMA_CONSULTA_HOOKDECK, TABELA_PRECO_PADRAO, ' +
-    'PASTA_BACKUP FROM CONFIGURACOES';
+    'PASTA_BACKUP, IMAGENS_DATABASE FROM CONFIGURACOES';
   LQuery.Open;
   if (not LQuery.IsEmpty) then
   begin
@@ -139,6 +139,7 @@ begin
     if Result.TabelaPrecoPadrao <= 0 then
       Result.TabelaPrecoPadrao := 29;
     Result.PastaBackup := LQuery.FieldByName('PASTA_BACKUP').AsString;
+    Result.Imagens_Database := LQuery.FieldByName('IMAGENS_DATABASE').AsString;
   end;
 end;
 

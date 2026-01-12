@@ -14,7 +14,9 @@ uses
   MigraBling.Model.Utils,
   MigraBling.Model.LogObserver,
   MigraBling.Model.Variacoes,
-  MigraBling.Model.Services.SubServices.SQLite.Dao;
+  MigraBling.Model.Services.SubServices.SQLite.Dao,
+  MigraBling.Model.ReferenciasImagens,
+  MigraBling.Model.Services.UploadImagem;
 
 type
   TDAOReferenciasSQLite = class(TDaoSQLite, IDAOTabelasSQLite<TReferencia>)
@@ -159,13 +161,17 @@ const
     'SELECT CAST(COALESCE(SUM(S.SAL_SALDO), 0.0) AS FLOAT) SAL_SALDO FROM SALDOS S ' +
     'JOIN FILIAL F ON (S.SAL_FILIAL = F.FIL_CODIGO) WHERE S.SAL_PRODUTO = :SAL_PRODUTO ' +
     'AND F.DESCONSIDERAR_ESTOQUE = 0 ';
+
+  SQL_IMAGENS =
+    'SELECT IMA_URL FROM REFERENCIAS_IMAGENS WHERE IMA_REFERENCIA = :PIMA_REFERENCIA ORDER BY IMA_SEQ';
 var
   LConfiguracao: TConfiguracao;
 begin
   LConfiguracao := FConfigurador.Ler(0);
   try
     Result := LerEntidade<TReferencia, TVariacao>(SQL, SQL_VARIACOES, SQL_SALDO_CONSOLIDA,
-      function(AQuery, AQueryVariacoes, AQuerySaldos: IQuery): TReferencia
+      SQL_IMAGENS,
+      function(AQuery, AQueryVariacoes, AQuerySaldos, AQueryImagens: IQuery): TReferencia
       var
         LReferencia: TReferencia;
         LVariacao: TVariacao;
@@ -227,6 +233,17 @@ begin
         LReferencia.ID_Movimento := AQuery.FieldByName('ID').AsString;
         LReferencia.TemAoMenosUmaVariacaoValida := false;
 
+        AQueryImagens.Close;
+        AQueryImagens.ParamByName('PIMA_REFERENCIA').AsString :=
+          AQuery.FieldByName('REF_REFERENCIA').AsString;
+        AQueryImagens.Open;
+
+        while not AQueryImagens.EOF do
+        begin
+          LReferencia.URLs.Add(AQueryImagens.FieldByName('IMA_URL').AsString);
+          AQueryImagens.Next;
+        end;
+
         AQueryVariacoes.Close;
         AQueryVariacoes.ParamByName('MAT_REFERENCIA').AsString :=
           AQuery.FieldByName('REF_REFERENCIA').AsString;
@@ -255,6 +272,17 @@ begin
           LVariacao.Exibir := (AQueryVariacoes.FieldByName('MAT_EXIBIR').AsInteger in [1, 3]);
           LVariacao.Descricao := 'COR: ' + LVariacao.CorStr + '; TAMANHO: ' + LVariacao.TamanhoStr;
           LVariacao.Ordem := LOrdem;
+
+          AQueryImagens.Close;
+          AQueryImagens.ParamByName('PIMA_REFERENCIA').AsString :=
+            AQueryVariacoes.FieldByName('MAT_CODIGO').AsString;
+          AQueryImagens.Open;
+
+          while not AQueryImagens.EOF do
+          begin
+            LVariacao.URLs.Add(AQueryImagens.FieldByName('IMA_URL').AsString);
+            AQueryImagens.Next;
+          end;
 
           AQuerySaldos.Close;
           AQuerySaldos.ParamByName('SAL_PRODUTO').AsString :=
@@ -318,6 +346,9 @@ begin
       Result := ((Obj.TipoReg = 'I') or (Obj.TipoReg = 'U'));
     end,
     procedure(LReferencia: TReferencia; AIndex: Integer; AQuery: IQuery)
+    var
+      LReferenciaImagem: TReferenciaImagem;
+      LQueryImagens: IQuery;
     begin
       AQuery.ParamByName('PREF_COLECAO').AsStrings(AIndex, LReferencia.Colecao);
       AQuery.ParamByName('PREF_REFERENCIA').AsStrings(AIndex, LReferencia.Referencia);
@@ -339,6 +370,24 @@ begin
       AQuery.ParamByName('PREF_INATIVO2').AsIntegers(AIndex, ifThen(LReferencia.Inativo, 1, 0));
 
       FVariacoes.Persistir(LReferencia.Variacoes);
+
+      if not LReferencia.Imagens.IsEmpty then
+      begin
+        LQueryImagens := TQueryFactory.New.GetQuery(AQuery.Connection.Clone);
+        LQueryImagens.SQL.Text := 'INSERT INTO REFERENCIAS_IMAGENS ( ' +
+          ' IMA_REFERENCIA, IMA_SEQ, IMA_URL) VALUES (:PIMA_REFERENCIA, :PIMA_SEQ, :PIMA_URL) ' +
+          'ON CONFLICT (IMA_REFERENCIA, IMA_SEQ) DO UPDATE SET IMA_URL = excluded.IMA_URL ';
+
+        for LReferenciaImagem in LReferencia.Imagens do
+        begin
+          LQueryImagens.Close;
+          LQueryImagens.ParamByName('PIMA_REFERENCIA').AsString := LReferencia.Referencia;
+          LQueryImagens.ParamByName('PIMA_SEQ').AsInteger := LReferenciaImagem.Seq;
+          LQueryImagens.ParamByName('PIMA_URL').AsString :=
+            TUploadImagem.Subir(LReferencia.Referencia, LReferenciaImagem.Imagem);
+          LQueryImagens.ExecSQL;
+        end;
+      end;
     end,
     procedure(LReferencia: TReferencia; AIndex: Integer; AQuery: IQuery)
     begin

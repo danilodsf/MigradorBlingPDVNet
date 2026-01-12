@@ -5,7 +5,8 @@ interface
 uses
   System.Generics.Collections,
   MigraBling.Model.BaseModel,
-  MigraBling.Model.Variacoes;
+  MigraBling.Model.Variacoes,
+  MigraBling.Model.ReferenciasImagens;
 
 type
   TReferencia = class(TBaseModel)
@@ -64,6 +65,8 @@ type
     FInativo: Boolean;
     FTipoReg: string;
     FExcluido: Boolean;
+    FImagens: TObjectList<TReferenciaImagem>;
+    FURLs: TList<string>;
   public
     property Referencia: string read FReferencia write FReferencia;
     property Nome: string read FNome write FNome;
@@ -121,6 +124,8 @@ type
     property Inativo: Boolean read FInativo write FInativo;
     property TipoReg: string read FTipoReg write FTipoReg;
     property Excluido: Boolean read FExcluido write FExcluido;
+    property Imagens: TObjectList<TReferenciaImagem> read FImagens write FImagens;
+    property URLs: TList<string> read FURLs write FURLs;
 
     constructor Create;
     destructor Destroy; override;
@@ -133,10 +138,14 @@ implementation
 constructor TReferencia.Create;
 begin
   FVariacoes := TObjectList<TVariacao>.Create;
+  FImagens := TObjectList<TReferenciaImagem>.Create(true);
+  FURLs := TList<string>.Create;
 end;
 
 destructor TReferencia.Destroy;
 begin
+  FURLs.Free;
+  FImagens.Free;
   FVariacoes.Free;
   inherited;
 end;

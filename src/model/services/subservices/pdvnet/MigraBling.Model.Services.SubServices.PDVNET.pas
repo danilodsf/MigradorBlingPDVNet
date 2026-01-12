@@ -27,6 +27,7 @@ type
   private
     FConfigurador: ISQLiteService;
     FConexao: IConexao;
+    FConexaoImagens: IConexao;
     FBuscarMovimentos: IRegistrosMovimentados;
     function GetBancoConfigurado: Boolean;
     procedure TabelaMovimentos;
@@ -138,11 +139,13 @@ begin
   LConfiguracoes := FConfigurador.Configuracoes.Ler(0);
   try
     FConexao := TConnection.getSQLServerConnection(LConfiguracoes);
+    FConexaoImagens := TConnection.getSQLServerConnection(LConfiguracoes, true);
   finally
     LConfiguracoes.Free;
   end;
 
-  FBuscarMovimentos := TPDVNETRegistrosMovimentados.Create(FConexao, FConfigurador);
+  FBuscarMovimentos := TPDVNETRegistrosMovimentados.Create(FConexao, FConexaoImagens,
+    FConfigurador);
 end;
 
 procedure TPDVNETService.CriarEstruturaSincronizacao;

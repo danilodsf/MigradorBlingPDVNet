@@ -23,7 +23,6 @@ object FrmMain: TFrmMain
     ActivePage = tbSincronizacao
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 661
     object tbSincronizacao: TTabSheet
       Caption = 'Sincroniza'#231#227'o'
       object pnlMain: TPanel
@@ -34,7 +33,6 @@ object FrmMain: TFrmMain
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 0
-        ExplicitWidth = 653
         object GroupBox1: TGroupBox
           AlignWithMargins = True
           Left = 3
@@ -44,7 +42,6 @@ object FrmMain: TFrmMain
           Align = alClient
           Caption = 'Monitor de Atividades'
           TabOrder = 0
-          ExplicitWidth = 647
           object mmoLog: TMemo
             Left = 2
             Top = 22
@@ -53,7 +50,6 @@ object FrmMain: TFrmMain
             Align = alClient
             ReadOnly = True
             TabOrder = 0
-            ExplicitWidth = 643
           end
         end
       end
@@ -65,7 +61,6 @@ object FrmMain: TFrmMain
         Align = alBottom
         BevelOuter = bvNone
         TabOrder = 1
-        ExplicitWidth = 653
         object Panel4: TPanel
           Left = 504
           Top = 0
@@ -84,9 +79,6 @@ object FrmMain: TFrmMain
             Caption = 'Sincronizar agora'
             TabOrder = 0
             OnClick = btnSincronizarClick
-            ExplicitLeft = -2
-            ExplicitTop = 103
-            ExplicitWidth = 138
           end
           object btnSincronizarReferencia: TBitBtn
             AlignWithMargins = True
@@ -98,9 +90,6 @@ object FrmMain: TFrmMain
             Caption = 'Exportar refer'#234'ncias'
             TabOrder = 1
             OnClick = btnSincronizarReferenciaClick
-            ExplicitLeft = 19
-            ExplicitTop = 93
-            ExplicitWidth = 138
           end
         end
         object rgAtivarSincronizador: TRadioGroup
@@ -129,7 +118,6 @@ object FrmMain: TFrmMain
           Align = alClient
           Caption = 'Status'
           TabOrder = 2
-          ExplicitWidth = 365
           object Panel1: TPanel
             Left = 2
             Top = 22
@@ -177,7 +165,6 @@ object FrmMain: TFrmMain
             Align = alClient
             BevelOuter = bvNone
             TabOrder = 1
-            ExplicitWidth = 167
             object lblServidorConfigurado: TLabel
               AlignWithMargins = True
               Left = 3
@@ -229,7 +216,6 @@ object FrmMain: TFrmMain
         Align = alTop
         BevelOuter = bvNone
         TabOrder = 0
-        ExplicitWidth = 653
         DesignSize = (
           662
           42)
@@ -245,7 +231,6 @@ object FrmMain: TFrmMain
           NumGlyphs = 2
           TabOrder = 0
           OnClick = btnSalvarClick
-          ExplicitLeft = 536
         end
         object btnCancelar: TBitBtn
           AlignWithMargins = True
@@ -259,7 +244,6 @@ object FrmMain: TFrmMain
           NumGlyphs = 2
           TabOrder = 1
           OnClick = btnCancelarClick
-          ExplicitLeft = 421
         end
         object btnAlterar: TBitBtn
           AlignWithMargins = True
@@ -324,7 +308,6 @@ object FrmMain: TFrmMain
         Align = alTop
         BevelOuter = bvNone
         TabOrder = 1
-        ExplicitWidth = 653
         object gbSQLServer: TGroupBox
           AlignWithMargins = True
           Left = 3
@@ -468,7 +451,6 @@ object FrmMain: TFrmMain
           Align = alClient
           BevelOuter = bvNone
           TabOrder = 1
-          ExplicitWidth = 414
           object Panel7: TPanel
             Left = 0
             Top = 0
@@ -477,7 +459,6 @@ object FrmMain: TFrmMain
             Align = alTop
             BevelOuter = bvNone
             TabOrder = 0
-            ExplicitWidth = 414
             object gbSQLBling: TGroupBox
               AlignWithMargins = True
               Left = 3
@@ -487,7 +468,6 @@ object FrmMain: TFrmMain
               Align = alClient
               Caption = 'Bling'
               TabOrder = 0
-              ExplicitWidth = 408
               object Label10: TLabel
                 AlignWithMargins = True
                 Left = 5
@@ -519,7 +499,6 @@ object FrmMain: TFrmMain
                 Margins.Top = 0
                 Align = alTop
                 TabOrder = 0
-                ExplicitWidth = 398
               end
               object edtClientSecretBling: TEdit
                 AlignWithMargins = True
@@ -537,7 +516,6 @@ object FrmMain: TFrmMain
                 ParentFont = False
                 PasswordChar = '*'
                 TabOrder = 1
-                ExplicitWidth = 398
               end
             end
           end
@@ -549,7 +527,6 @@ object FrmMain: TFrmMain
             Align = alClient
             BevelOuter = bvNone
             TabOrder = 1
-            ExplicitWidth = 414
             object gbSincronizador: TGroupBox
               AlignWithMargins = True
               Left = 3
@@ -559,7 +536,6 @@ object FrmMain: TFrmMain
               Align = alClient
               Caption = 'Sincronizador'
               TabOrder = 0
-              ExplicitWidth = 408
               object Label3: TLabel
                 AlignWithMargins = True
                 Left = 5
@@ -595,7 +571,6 @@ object FrmMain: TFrmMain
                 Align = alTop
                 NumbersOnly = True
                 TabOrder = 0
-                ExplicitWidth = 398
               end
               object spnSubirEstoqueAcimaQtd: TSpinEdit
                 Left = 64
@@ -620,7 +595,6 @@ object FrmMain: TFrmMain
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 2
-        ExplicitWidth = 653
         object gbEstrutura: TGroupBox
           Left = 0
           Top = 0
@@ -629,7 +603,6 @@ object FrmMain: TFrmMain
           Align = alClient
           Caption = 'Par'#226'metros do migrador'
           TabOrder = 0
-          ExplicitWidth = 653
           object Label5: TLabel
             AlignWithMargins = True
             Left = 5
@@ -719,7 +692,6 @@ object FrmMain: TFrmMain
             Columns = 3
             ItemHeight = 20
             TabOrder = 2
-            ExplicitWidth = 643
           end
           object rgPrecoTabela: TRadioGroup
             AlignWithMargins = True
@@ -741,7 +713,6 @@ object FrmMain: TFrmMain
               'RETIRADA FUNCIONARIO'
               'ATACADO')
             TabOrder = 3
-            ExplicitWidth = 643
           end
         end
       end

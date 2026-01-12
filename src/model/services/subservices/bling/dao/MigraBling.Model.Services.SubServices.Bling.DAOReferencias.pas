@@ -22,7 +22,7 @@ uses
   MigraBling.Model.AppControl,
   MigraBling.Model.BaseModel,
   MigraBling.Model.Services.SubServices.Bling.DAOSaldos,
-  MigraBling.Model.Saldos;
+  MigraBling.Model.Saldos, MigraBling.Model.ReferenciasImagens;
 
 type
   TDAOReferenciasBling = class(TInterfacedObject, IDAOBling<TReferencia>,
@@ -130,8 +130,10 @@ end;
 function TDAOReferenciasBling.ObterJSONProduto(AObj: TReferencia; AExibirIDs: Boolean): TJSONObject;
 var
   JSONBodyVariacao: TJSONObject;
-  JSONArrayCampos, JSONArrayCamposVariacoes, JSONArrayVariacoes: TJSONArray;
+  JSONArrayCampos, JSONArrayCamposVariacoes, JSONArrayVariacoes, JSONArrayImagens,
+    JSONArrayImagensVariacoes: TJSONArray;
   variacao: TVariacao;
+  url: string;
 begin
   Result := TJSONObject.Create;
   JSONArrayCampos := TJSONArray.Create;
@@ -165,6 +167,17 @@ begin
   Result.AddPair('dimensoes', TJSONObject.Create.AddPair('largura', AObj.Largura).AddPair('altura',
     AObj.Altura).AddPair('profundidade', AObj.Profundidade).AddPair('unidadeMedida', 1));
 
+  if not AObj.URLs.isEmpty then
+  begin
+    JSONArrayImagens := TJSONArray.Create;
+    for url in AObj.URLs do
+    begin
+      JSONArrayImagens.Add(TJSONObject.Create.AddPair('link', url));
+      Result.AddPair('midia', TJSONObject.Create.AddPair('video', TJSONObject.Create.AddPair('url',
+        '')).AddPair('imagens', TJSONObject.Create.AddPair('imagensURL', JSONArrayImagens)));
+    end;
+  end;
+
   AdicionarCampoCustomizado(AObj.Departamento_ID_Bling, AObj.Departamento_Campo,
     AObj.Departamento_Vinculo, AObj.Departamento, JSONArrayCampos, false);
 
@@ -188,7 +201,7 @@ begin
 
   Result.AddPair('camposCustomizados', JSONArrayCampos);
 
-  // GravarLogTeste(Result.ToJSON);
+  GravarLogTeste(Result.ToJSON);
 
   if AObj.Variacoes.Count > 0 then
   begin
@@ -246,6 +259,18 @@ begin
           .AddPair('altura', AObj.Altura).AddPair('profundidade', AObj.Profundidade)
           .AddPair('unidadeMedida', 1));
 
+        if not variacao.URLs.isEmpty then
+        begin
+          JSONArrayImagensVariacoes := TJSONArray.Create;
+          for url in variacao.URLs do
+          begin
+            JSONArrayImagensVariacoes.Add(TJSONObject.Create.AddPair('link', url));
+            JSONBodyVariacao.AddPair('midia', TJSONObject.Create.AddPair('video',
+              TJSONObject.Create.AddPair('url', '')).AddPair('imagens',
+              TJSONObject.Create.AddPair('imagensURL', JSONArrayImagensVariacoes)));
+          end;
+        end;
+
         JSONArrayCamposVariacoes := TJSONArray.Create;
 
         AdicionarCampoCustomizado(AObj.Departamento_ID_Bling, AObj.Departamento_Campo,
@@ -274,7 +299,7 @@ begin
         JSONBodyVariacao.AddPair('variacao', TJSONObject.Create.AddPair('nome', variacao.Descricao)
           .AddPair('ordem', variacao.Ordem));
 
-        // GravarLogTeste(JSONBodyVariacao.ToJSON);
+        GravarLogTeste(JSONBodyVariacao.ToJSON);
 
         JSONArrayVariacoes.Add(JSONBodyVariacao);
       end;
@@ -285,6 +310,7 @@ begin
         JSONArrayVariacoes.Free;
     end;
   end;
+  GravarLogTeste(Result.ToJSON);
 end;
 
 procedure TDAOReferenciasBling.Criar(AObj: TReferencia);
@@ -297,7 +323,7 @@ var
   I: integer;
   referencia: string;
 begin
-  if AObj.Inativo or AObj.Nome.IsEmpty or (not AObj.Exibir) or (AObj.Nome = 'EXCLUIR') then
+  if AObj.Inativo or AObj.Nome.isEmpty or (not AObj.Exibir) or (AObj.Nome = 'EXCLUIR') then
   begin
     AObj.ID_Bling := 'EXCLUIR';
     exit;
@@ -485,7 +511,7 @@ begin
     exit;
   end;
 
-  if AObj.Inativo or AObj.Nome.IsEmpty or (AObj.Nome = 'EXCLUIR') then
+  if AObj.Inativo or AObj.Nome.isEmpty or (AObj.Nome = 'EXCLUIR') then
   begin
     AObj.ID_Bling := 'EXCLUIR';
     exit;
@@ -630,7 +656,7 @@ begin
         if not Assigned(LArrayProdutosExcluidos) then
           break;
 
-        if LArrayProdutosExcluidos.IsEmpty then
+        if LArrayProdutosExcluidos.isEmpty then
           break;
 
         TLogSubject.GetInstance.NotifyAll('Limpando registros excluídos - Página: ' +
@@ -642,7 +668,7 @@ begin
             LCodigosExcluidos.Add(LProdutoExcluido.GetValue<string>('id'))
         end;
 
-        if (not LCodigosExcluidos.IsEmpty) then
+        if (not LCodigosExcluidos.isEmpty) then
         begin
           Apagar(LCodigosExcluidos);
           LCodigosExcluidos.Clear;
@@ -735,7 +761,7 @@ procedure TDAOReferenciasBling.Apagar(AIDs: TList<string>);
 var
   errorResponse: TResponseError;
 begin
-  if AIDs.IsEmpty then
+  if AIDs.isEmpty then
     exit;
 
   errorResponse := nil;

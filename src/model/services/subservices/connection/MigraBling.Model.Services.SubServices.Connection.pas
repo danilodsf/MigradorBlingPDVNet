@@ -15,7 +15,8 @@ type
   TConnection = class
   public
     class function getSQLiteConnection: IConexao;
-    class function getSQLServerConnection(AConfigurcao: TConfiguracao): IConexao;
+    class function getSQLServerConnection(AConfiguracao: TConfiguracao;
+      AUsarBDAuxiliar: Boolean = false): IConexao;
   end;
 
 implementation
@@ -29,7 +30,7 @@ begin
   dbDir := getAppDir + 'db\';
   result := TConexaoFactory.New.GetConexao(dpFD);
   result.BaseConectada := 'SQLite';
-  result.Params.Add('Database=' + dbDir+ 'db.db');
+  result.Params.Add('Database=' + dbDir + 'db.db');
   result.Params.Add('LockingMode=Normal');
   result.Params.Add('DriverID=SQLite');
   result.Params.Add('Synchronous=Normal');
@@ -38,7 +39,7 @@ begin
   result.Params.Add('BusyTimeout=30000');
   result.Params.Add('TempStore=Memory');
 
-  if not FileExists(dbDir+'db.db') then
+  if not FileExists(dbDir + 'db.db') then
   begin
     ForceDirectories(dbDir);
     TCriadorBD.CriarBancoDeDados(result);
@@ -47,15 +48,22 @@ begin
     TCriadorBD.AtualizarBancoDeDados(result);
 end;
 
-class function TConnection.getSQLServerConnection(AConfigurcao: TConfiguracao): IConexao;
+class function TConnection.getSQLServerConnection(AConfiguracao: TConfiguracao;
+  AUsarBDAuxiliar: Boolean = false): IConexao;
 begin
+  if AUsarBDAuxiliar and AConfiguracao.Imagens_Database.IsEmpty then
+    exit(nil);
+
   result := TConexaoFactory.New.GetConexao({$IFDEF USE_FD_MSSQL}dpFD{$ELSE}dpADO{$ENDIF});
   result.BaseConectada := 'PDVNET';
-  result.Params.Add('Server=' + AConfigurcao.PDVNET_Server);
+  result.Params.Add('Server=' + AConfiguracao.PDVNET_Server);
   result.Params.Add('OSAuthent=No');
-  result.Params.Add('Database=' + AConfigurcao.PDVNET_Database);
-  result.Params.Add('User_Name=' + AConfigurcao.PDVNET_UserName);
-  result.Params.Add('Password=' + AConfigurcao.PDVNET_Password);
+  if AUsarBDAuxiliar then
+    result.Params.Add('Database=' + AConfiguracao.Imagens_Database)
+  else
+    result.Params.Add('Database=' + AConfiguracao.PDVNET_Database);
+  result.Params.Add('User_Name=' + AConfiguracao.PDVNET_UserName);
+  result.Params.Add('Password=' + AConfiguracao.PDVNET_Password);
   result.Params.Add('LoginTimeout=2');
   result.Params.Add('DriverID=MSSQL');
   result.Params.Add('MARS=Yes');

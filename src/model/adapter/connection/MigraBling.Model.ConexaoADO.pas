@@ -17,6 +17,7 @@ type
     FBaseConectada: string;
     FParams: TStringList;
     FCoInitialized: Boolean;
+    FUsarBaseAuxiliar: Boolean;
     function GetParams: TStrings;
     procedure SetParams(AValue: TStrings);
     function GetConnected: Boolean;
@@ -26,7 +27,7 @@ type
     function GetBaseConectada: string;
     procedure SetBaseConectada(AValue: string);
   public
-    constructor Create;
+    constructor Create(AUsarBaseAuxiliar: Boolean = false);
     destructor Destroy; override;
     property Params: TStrings read GetParams write SetParams;
     property Connected: Boolean read GetConnected write SetConnected;
@@ -50,6 +51,9 @@ uses
 
 function TConexaoADO.Clone: IConexao;
 begin
+  if Self.Params.Values['Database'] = '' then
+    exit;
+
   Result := TConexaoADO.Create;
   Result.Params.Text := Self.Params.Text;
   Result.BaseConectada := Self.FBaseConectada;
@@ -66,10 +70,11 @@ begin
   FConnection.CommitTrans;
 end;
 
-constructor TConexaoADO.Create;
+constructor TConexaoADO.Create(AUsarBaseAuxiliar: Boolean);
 var
   hr: HResult;
 begin
+  FUsarBaseAuxiliar := AUsarBaseAuxiliar;
   hr := CoInitializeEx(nil, COINIT_APARTMENTTHREADED);
   FCoInitialized := hr = S_OK;
 
@@ -139,7 +144,7 @@ begin
   LPassword := FParams.Values['Password'];
 
   LConnStr := 'Provider=MSOLEDBSQL19;PWD=' + LPassword +
-    ';UID=' + LUserName + ';Database=BDMATRIZSPLIT;Server=' + LServer +
+    ';UID=' + LUserName + ';Database='+LDataBase+';Server=' + LServer +
     ';Use Encryption for Data=Optional;MultipleActiveResultSets=True;';
 
   FConnection.ConnectionString := LConnStr;

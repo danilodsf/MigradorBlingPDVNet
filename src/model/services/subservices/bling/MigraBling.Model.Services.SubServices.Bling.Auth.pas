@@ -19,7 +19,7 @@ uses
   System.SyncObjs,
   MigraBling.Model.Services.SubServices.Interfaces.Auth,
   MigraBling.Model.LogObserver,
-  MigraBling.Model.Services.SubServices.Bling.Response, Rest.JSON;
+  MigraBling.Model.Services.SubServices.Bling.Response, Rest.JSON, MigraBling.Audio;
 
 type
   TModelAuth = class(TInterfacedObject, IModelAuth)
@@ -58,6 +58,8 @@ begin
       begin
         Exit(updateAccessToken(FConfiguracoes.RefreshToken));
       end;
+
+      TNotificador.Notificar;
 
       StartServer;
 
@@ -118,6 +120,8 @@ begin
         FConfigurador.Configuracoes.Atualizar(FConfiguracoes);
 
         FTokenReadyEvent.SetEvent;
+
+        TNotificador.Parar;
       finally
         JSON.Free;
       end;
