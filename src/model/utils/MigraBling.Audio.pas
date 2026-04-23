@@ -14,15 +14,16 @@ type
   TNotificador = class
   private
     class var FForm: TFrmAlertaToken;
-    class procedure ExibirAlerta;
+    class procedure ExibirAlerta(AMotivoNotificacao: string);
   public
-    class procedure Notificar;
+    class procedure NotificarTokenExpirado;
+    class procedure NotificarFalhaConexaoSQLServer;
     class procedure Parar;
   end;
 
 implementation
 
-class procedure TNotificador.ExibirAlerta;
+class procedure TNotificador.ExibirAlerta(AMotivoNotificacao: string);
 begin
   FForm := TFrmAlertaToken.Create(nil);
   try
@@ -34,12 +35,21 @@ begin
   Parar;
 end;
 
-class procedure TNotificador.Notificar;
+class procedure TNotificador.NotificarFalhaConexaoSQLServer;
 begin
   TThread.Queue(nil,
     procedure
     begin
-      ExibirAlerta;
+      ExibirAlerta('Não foi possível conectar ao PDVNET');
+    end);
+end;
+
+class procedure TNotificador.NotificarTokenExpirado;
+begin
+  TThread.Queue(nil,
+    procedure
+    begin
+      ExibirAlerta('O Token do Bling expirou'+sLineBreak+'É necessário refazer o login');
     end);
 end;
 

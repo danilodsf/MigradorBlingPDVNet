@@ -8,7 +8,9 @@ uses
   Data.DB,
   System.Classes,
   Winapi.ActiveX,
-  System.Win.ComObj, Vcl.Dialogs;
+  System.Win.ComObj,
+  Vcl.Dialogs,
+  MigraBling.Audio;
 
 type
   TConexaoADO = class(TInterfacedObject, IConexao)
@@ -79,7 +81,7 @@ begin
   FCoInitialized := hr = S_OK;
 
   FConnection := TADOConnection.Create(nil);
-  FConnection.LoginPrompt := False;
+  FConnection.LoginPrompt := false;
   FParams := TStringList.Create;
 end;
 
@@ -143,8 +145,8 @@ begin
   LUserName := FParams.Values['User_Name'];
   LPassword := FParams.Values['Password'];
 
-  LConnStr := 'Provider=MSOLEDBSQL19;PWD=' + LPassword +
-    ';UID=' + LUserName + ';Database='+LDataBase+';Server=' + LServer +
+  LConnStr := 'Provider=MSOLEDBSQL19;PWD=' + LPassword + ';UID=' + LUserName + ';Database=' +
+    LDataBase + ';Server=' + LServer +
     ';Use Encryption for Data=Optional;MultipleActiveResultSets=True;';
 
   FConnection.ConnectionString := LConnStr;
@@ -152,7 +154,10 @@ begin
     FConnection.Connected := AValue;
   except
     on e: Exception do
-      raise Exception.Create(E.message + sLineBreak + FConnection.ConnectionString);
+    begin
+      TNotificador.NotificarFalhaConexaoSQLServer;
+      raise Exception.Create(e.message + sLineBreak + FConnection.ConnectionString);
+    end;
   end;
 end;
 

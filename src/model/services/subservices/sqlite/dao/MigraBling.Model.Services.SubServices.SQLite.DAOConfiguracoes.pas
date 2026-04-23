@@ -136,8 +136,6 @@ begin
     Result.DataUltimaConsultaHookDeck :=
       getDataSQLite(LQuery.FieldByName('DT_ULTIMA_CONSULTA_HOOKDECK').AsString);
     Result.TabelaPrecoPadrao := LQuery.FieldByName('TABELA_PRECO_PADRAO').AsInteger;
-    if Result.TabelaPrecoPadrao <= 0 then
-      Result.TabelaPrecoPadrao := 29;
     Result.PastaBackup := LQuery.FieldByName('PASTA_BACKUP').AsString;
     Result.Imagens_Database := LQuery.FieldByName('IMAGENS_DATABASE').AsString;
   end;

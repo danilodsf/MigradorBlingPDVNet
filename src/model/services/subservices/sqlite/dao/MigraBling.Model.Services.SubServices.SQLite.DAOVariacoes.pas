@@ -131,7 +131,7 @@ begin
           LQueryImagens.ParamByName('PIMA_REFERENCIA').AsString := AVariacao.ID;
           LQueryImagens.ParamByName('PIMA_SEQ').AsInteger := LReferenciaImagem.Seq;
           LQueryImagens.ParamByName('PIMA_URL').AsString :=
-            TUploadImagem.Subir(AVariacao.ID, LReferenciaImagem.Imagem);
+            TUploadImagem.Subir(AVariacao.ID, LReferenciaImagem.Imagem, LReferenciaImagem.Seq);
           LQueryImagens.ExecSQL;
         end;
       end;

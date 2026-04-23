@@ -59,7 +59,7 @@ begin
         Exit(updateAccessToken(FConfiguracoes.RefreshToken));
       end;
 
-      TNotificador.Notificar;
+      TNotificador.NotificarTokenExpirado;
 
       StartServer;
 
@@ -69,12 +69,12 @@ begin
         [FConfiguracoes.ClientID, FState]);
       ShellExecute(0, 'open', PChar(url), nil, nil, SW_SHOWNORMAL);
 
-      WaitResult := FTokenReadyEvent.WaitFor(INFINITE);
+      WaitResult := FTokenReadyEvent.WaitFor(60000);
 
       if WaitResult = wrSignaled then
         Result := FConfiguracoes.AccessToken
       else
-        TLogSubject.GetInstance.NotifyAll('Tempo de autenticaÁ„o expirado. Nenhum token recebido.');
+        TLogSubject.GetInstance.NotifyAll('Tempo de autentica√ß√£o expirado. Nenhum token recebido.');
     except
       raise;
     end;
@@ -92,7 +92,7 @@ begin
       FAuthorizationCode := Req.Query.Field('code').AsString;
       FState := Req.Query.Field('state').AsString;
 
-      Res.Send('Pode fechar esta p·gina');
+      Res.Send('Pode fechar esta p√°gina');
       getToken(FAuthorizationCode);
     end);
 
@@ -130,7 +130,7 @@ begin
     on E: Exception do
     begin
       FTokenReadyEvent.SetEvent;
-      TLogSubject.GetInstance.NotifyAll('N„o foi possÌvel gerar o Token de autenticaÁ„o.' + #13#10 +
+      TLogSubject.GetInstance.NotifyAll('N√£o foi poss√≠vel gerar o Token de autentica√ß√£o.' + #13#10 +
         E.Message);
     end;
   end;
@@ -166,12 +166,10 @@ begin
       FConfiguracoes.RefreshToken := '';
       Exit(getAccessToken);
     end;
-
-    raise Exception.Create(Response.Content);
   except
     on E: Exception do
     begin
-      TLogSubject.GetInstance.NotifyAll('N„o foi possÌvel atualizar o Token de autenticaÁ„o.' +
+      TLogSubject.GetInstance.NotifyAll('N√£o foi poss√≠vel atualizar o Token de autentica√ß√£o.' +
         #13#10 + E.Message);
     end;
   end;
@@ -209,13 +207,6 @@ begin
         FConfiguracoes.ExpiresIn := IncMinute(Date, -1);
         FConfiguracoes.AccessToken := '';
         getAccessToken;
-        while True do
-        begin
-          if FConfiguracoes.AccessToken = '' then
-            Sleep(10)
-          else
-            Break;
-        end;
       end;
     finally
       FreeAndNil(errorResponse);

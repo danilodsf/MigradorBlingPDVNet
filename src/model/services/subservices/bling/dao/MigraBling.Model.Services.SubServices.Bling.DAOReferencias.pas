@@ -64,7 +64,7 @@ var
   JSONLeitura, JSONCampo: TJSONObject;
   I: integer;
 begin
-  // só é usado para ajustar registros que gravaram errado
+  // sÃ³ Ã© usado para ajustar registros que gravaram errado
   exit;
   for referencia in AListObj do
   begin
@@ -145,23 +145,23 @@ begin
 
   if AObj.TemAoMenosUmaVariacaoValida then
   begin
-    Result.AddPair('formato', 'V'); { V - Produdo com variação }
+    Result.AddPair('formato', 'V'); { V - Produdo com variaÃ§Ã£o }
     Result.AddPair('preco', AObj.Variacoes[0].Preco);
   end
   else
   begin
-    Result.AddPair('formato', 'S'); { S - Simples "Variação do produto" }
-    Result.AddPair('preco', 1000); // Preço não pode ficar em branco
+    Result.AddPair('formato', 'S'); { S - Simples "VariaÃ§Ã£o do produto" }
+    Result.AddPair('preco', 1000); // PreÃ§o nÃ£o pode ficar em branco
   end;
 
   Result.AddPair('descricaoCurta', TextoParaHTML(AObj.Descricao));
   Result.AddPair('descricaoComplementar', TextoParaHTML(AObj.Descricao_Complementar));
-  Result.AddPair('marca', 'Split Fashion'); { Criar configuração para não ficar fixo }
+  Result.AddPair('marca', GetEnvironmentVariable('MARCA_PRODUTO'));
   Result.AddPair('unidade', AObj.Unidade);
   Result.AddPair('pesoLiquido', AObj.Peso);
   Result.AddPair('pesoBruto', AObj.Peso);
-  Result.AddPair('tipoProducao', 'P'); { P - própria, T - terceiros }
-  Result.AddPair('condicao', 1); { 0 - Não especificado, 1 - Novo, 2 - Usado, 3 - Recondicionado }
+  Result.AddPair('tipoProducao', 'P'); { P - prÃ³pria, T - terceiros }
+  Result.AddPair('condicao', 1); { 0 - NÃ£o especificado, 1 - Novo, 2 - Usado, 3 - Recondicionado }
   // Result.AddPair('categoria', TJSONObject.Create.AddPair('id', AObj.Categoria_ID_Bling));
   Result.AddPair('tributacao', TJSONObject.Create.AddPair('origem', 0).AddPair('ncm', AObj.NCM));
   Result.AddPair('dimensoes', TJSONObject.Create.AddPair('largura', AObj.Largura).AddPair('altura',
@@ -171,11 +171,10 @@ begin
   begin
     JSONArrayImagens := TJSONArray.Create;
     for url in AObj.URLs do
-    begin
       JSONArrayImagens.Add(TJSONObject.Create.AddPair('link', url));
-      Result.AddPair('midia', TJSONObject.Create.AddPair('video', TJSONObject.Create.AddPair('url',
-        '')).AddPair('imagens', TJSONObject.Create.AddPair('imagensURL', JSONArrayImagens)));
-    end;
+
+    Result.AddPair('midia', TJSONObject.Create.AddPair('video', TJSONObject.Create.AddPair('url',
+      '')).AddPair('imagens', TJSONObject.Create.AddPair('imagensURL', JSONArrayImagens)));
   end;
 
   AdicionarCampoCustomizado(AObj.Departamento_ID_Bling, AObj.Departamento_Campo,
@@ -214,7 +213,7 @@ begin
           if variacao.ID_Bling = 'EXCLUIR' then
             continue;
 
-          TLogSubject.GetInstance.NotifyAll('Apagando variação: ' + variacao.ID);
+          TLogSubject.GetInstance.NotifyAll('Apagando variaÃ§Ã£o: ' + variacao.ID);
           Apagar(variacao, variacao.ID);
           continue;
         end;
@@ -232,7 +231,8 @@ begin
             variacao.ID_Bling := LocalizarEAtualizarProduto(variacao.ID);
           Sleep(1000);
 
-          JSONBodyVariacao.AddPair('id', variacao.ID_Bling);
+          if variacao.ID_Bling <> '' then
+            JSONBodyVariacao.AddPair('id', variacao.ID_Bling);
         end;
         JSONBodyVariacao.AddPair('nome', AObj.Nome + ' COR: ' + variacao.CorStr + '; TAMANHO: ' +
           variacao.TamanhoStr);
@@ -240,9 +240,8 @@ begin
         JSONBodyVariacao.AddPair('preco', variacao.Preco);
         JSONBodyVariacao.AddPair('tipo', 'P');
         JSONBodyVariacao.AddPair('condicao', 1);
-        { 0 - Não especificado, 1 - Novo, 2 - Usado, 3 - Recondicionado }
-        JSONBodyVariacao.AddPair('marca', 'Split Fashion');
-        { Criar configuração para não ficar fixo }
+        { 0 - NÃ£o especificado, 1 - Novo, 2 - Usado, 3 - Recondicionado }
+        JSONBodyVariacao.AddPair('marca', GetEnvironmentVariable('MARCA_PRODUTO'));
         JSONBodyVariacao.AddPair('situacao', 'A');
         JSONBodyVariacao.AddPair('formato', 'S');
         JSONBodyVariacao.AddPair('descricaoCurta', AObj.Descricao);
@@ -250,7 +249,7 @@ begin
         JSONBodyVariacao.AddPair('unidade', AObj.Unidade);
         JSONBodyVariacao.AddPair('pesoLiquido', AObj.Peso);
         JSONBodyVariacao.AddPair('pesoBruto', AObj.Peso);
-        JSONBodyVariacao.AddPair('tipoProducao', 'P'); { P - própria, T - terceiros }
+        JSONBodyVariacao.AddPair('tipoProducao', 'P'); { P - prÃ³pria, T - terceiros }
         // JSONBodyVariacao.AddPair('categoria', TJSONObject.Create.AddPair('id',
         // AObj.Categoria_ID_Bling));
         JSONBodyVariacao.AddPair('tributacao', TJSONObject.Create.AddPair('origem', 0)
@@ -263,12 +262,11 @@ begin
         begin
           JSONArrayImagensVariacoes := TJSONArray.Create;
           for url in variacao.URLs do
-          begin
             JSONArrayImagensVariacoes.Add(TJSONObject.Create.AddPair('link', url));
-            JSONBodyVariacao.AddPair('midia', TJSONObject.Create.AddPair('video',
-              TJSONObject.Create.AddPair('url', '')).AddPair('imagens',
-              TJSONObject.Create.AddPair('imagensURL', JSONArrayImagensVariacoes)));
-          end;
+
+          JSONBodyVariacao.AddPair('midia', TJSONObject.Create.AddPair('video',
+            TJSONObject.Create.AddPair('url', '')).AddPair('imagens',
+            TJSONObject.Create.AddPair('imagensURL', JSONArrayImagensVariacoes)));
         end;
 
         JSONArrayCamposVariacoes := TJSONArray.Create;
@@ -333,14 +331,18 @@ begin
   try
     try
       JSONEnvio := ObterJSONProduto(AObj);
-      referencia := JSONEnvio.GetValue<string>('codigo');
-      Response := TRequest.New.BaseURL(C_BASEURL + C_PRODUTOS).Accept(C_ACCEPT)
-        .ContentType(CONTENTTYPE_APPLICATION_JSON).TokenBearer(FAuth.AccessToken).AddBody(JSONEnvio)
-        .OnAfterExecute(
-        procedure(const Req: IRequest; const Res: IResponse)
-        begin
-          FAuth.AtualizarToken(Req, Res);
-        end).Post;
+      try
+        referencia := JSONEnvio.GetValue<string>('codigo');
+        Response := TRequest.New.BaseURL(C_BASEURL + C_PRODUTOS).Accept(C_ACCEPT)
+          .ContentType(CONTENTTYPE_APPLICATION_JSON).TokenBearer(FAuth.AccessToken).AddBody(JSONEnvio)
+          .OnAfterExecute(
+          procedure(const Req: IRequest; const Res: IResponse)
+          begin
+            FAuth.AtualizarToken(Req, Res);
+          end).Post;
+      finally
+        JSONEnvio.Free;
+      end;
 
       if Response.StatusCode = 201 then
       begin
@@ -393,7 +395,7 @@ begin
 
       errorResponse := TJSON.JsonToObject<TResponseError>(Response.Content);
 
-      if errorResponse.AllErrors.Contains('já foi cadastrado para o produto') then
+      if errorResponse.AllErrors.Contains('jÃ¡ foi cadastrado para o produto') then
       begin
         AObj.ID_Bling := LocalizarEAtualizarProduto(referencia);
         if AObj.ID_Bling <> '' then
@@ -402,7 +404,7 @@ begin
 
       if Assigned(errorResponse.error) then
         raise Exception.Create(errorResponse.error.Message + ' - ' + errorResponse.error.description
-          + ' - ' + 'Referências' + '. ' + errorResponse.AllErrors)
+          + ' - ' + 'ReferÃªncias' + '. ' + errorResponse.AllErrors)
       else
         raise Exception.Create(Response.Content);
     except
@@ -521,14 +523,17 @@ begin
   try
     try
       JSONEnvio := ObterJSONProduto(AObj, true);
-
-      Response := TRequest.New.BaseURL(C_BASEURL + C_PRODUTOS + AObj.ID_Bling).Accept(C_ACCEPT)
-        .ContentType(CONTENTTYPE_APPLICATION_JSON).TokenBearer(FAuth.AccessToken).AddBody(JSONEnvio)
-        .OnAfterExecute(
-        procedure(const Req: IRequest; const Res: IResponse)
-        begin
-          FAuth.AtualizarToken(Req, Res);
-        end).Put;
+      try
+        Response := TRequest.New.BaseURL(C_BASEURL + C_PRODUTOS + AObj.ID_Bling).Accept(C_ACCEPT)
+          .ContentType(CONTENTTYPE_APPLICATION_JSON).TokenBearer(FAuth.AccessToken).AddBody(JSONEnvio)
+          .OnAfterExecute(
+          procedure(const Req: IRequest; const Res: IResponse)
+          begin
+            FAuth.AtualizarToken(Req, Res);
+          end).Put;
+      finally
+        JSONEnvio.Free;
+      end;
 
       if Response.StatusCode = 200 then
       begin
@@ -570,7 +575,7 @@ begin
 
       if Assigned(errorResponse.error) then
         raise Exception.Create(errorResponse.error.Message + ' - ' + errorResponse.error.description
-          + ' - ' + 'Referências' + '. ' + errorResponse.AllErrors)
+          + ' - ' + 'ReferÃªncias' + '. ' + errorResponse.AllErrors)
       else
         raise Exception.Create(Response.Content);
 
@@ -603,7 +608,7 @@ begin
           break;
         if ((AListObj[I].TipoReg = 'I') or (AListObj[I].ID_Bling = '')) then
         begin
-          TLogSubject.GetInstance.NotifyAll('Inserindo referência: ' + AListObj[I].referencia + ' '
+          TLogSubject.GetInstance.NotifyAll('Inserindo referÃªncia: ' + AListObj[I].referencia + ' '
             + IntToStr(I + 1) + ' de ' + AListObj.Count.ToString);
           Criar(AListObj[I]);
 
@@ -612,7 +617,7 @@ begin
         end
         else if ((AListObj[I].TipoReg = 'U') and (AListObj[I].ID_Bling <> '')) then
         begin
-          TLogSubject.GetInstance.NotifyAll('Atualizando referência: ' + AListObj[I].referencia +
+          TLogSubject.GetInstance.NotifyAll('Atualizando referÃªncia: ' + AListObj[I].referencia +
             ' ' + IntToStr(I + 1) + ' de ' + AListObj.Count.ToString);
           Atualizar(AListObj[I]);
 
@@ -621,7 +626,7 @@ begin
         end
         else if ((AListObj[I].TipoReg = 'D') and (AListObj[I].ID_Bling <> '')) then
         begin
-          TLogSubject.GetInstance.NotifyAll('Excluindo referência: ' + AListObj[I].referencia + ' '
+          TLogSubject.GetInstance.NotifyAll('Excluindo referÃªncia: ' + AListObj[I].referencia + ' '
             + IntToStr(I + 1) + ' de ' + AListObj.Count.ToString);
           Apagar(AListObj[I], AListObj[I].referencia);
         end;
@@ -646,7 +651,7 @@ begin
   try
     while true do
     begin
-      LProdutosExcluidos := LerExcluidos(1);
+      LProdutosExcluidos := LerExcluidos(LPagina);
       try
         if not Assigned(LProdutosExcluidos) then
           break;
@@ -659,7 +664,7 @@ begin
         if LArrayProdutosExcluidos.isEmpty then
           break;
 
-        TLogSubject.GetInstance.NotifyAll('Limpando registros excluídos - Página: ' +
+        TLogSubject.GetInstance.NotifyAll('Limpando registros excluÃ­dos - PÃ¡gina: ' +
           LPagina.ToString);
 
         for LProdutoExcluido in LArrayProdutosExcluidos do
@@ -709,7 +714,7 @@ begin
               procedure(const Req: IRequest; const Res: IResponse)
               begin
                 FAuth.AtualizarToken(Req, Res);
-              end).Patch;
+              end).Put;
 
             Response := TRequest.New.BaseURL(C_BASEURL + C_PRODUTOS).Accept(C_ACCEPT)
               .AddUrlSegment('idProduto', AObj.ID_Bling).ContentType(CONTENTTYPE_APPLICATION_JSON)
@@ -737,14 +742,14 @@ begin
 
             if Assigned(errorResponse.error) then
               raise Exception.Create(errorResponse.error.Message + ' - ' +
-                errorResponse.error.description + ' - ' + 'Referências' + '. ' +
+                errorResponse.error.description + ' - ' + 'ReferÃªncias' + '. ' +
                 errorResponse.AllErrors)
             else
               raise Exception.Create(Response.Content);
           except
             on E: Exception do
             begin
-              TLogSubject.GetInstance.NotifyAll('Não foi possível excluir o produto' + #13#10 +
+              TLogSubject.GetInstance.NotifyAll('NÃ£o foi possÃ­vel excluir o produto' + #13#10 +
                 E.Message);
             end;
           end;
@@ -798,7 +803,7 @@ begin
           if Response.StatusCode = 204 then
           begin
             TLogSubject.GetInstance.NotifyAll
-              ('Referências pendentes de exclusão apagadas com sucesso');
+              ('ReferÃªncias pendentes de exclusÃ£o apagadas com sucesso');
             exit;
           end;
 
@@ -812,7 +817,7 @@ begin
         except
           on E: Exception do
           begin
-            TLogSubject.GetInstance.NotifyAll('Não foi possível excluir o produto' + #13#10 +
+            TLogSubject.GetInstance.NotifyAll('NÃ£o foi possÃ­vel excluir o produto' + #13#10 +
               E.Message);
           end;
         end;
@@ -856,7 +861,7 @@ begin
 
           if Response.StatusCode = 204 then
           begin
-            TLogSubject.GetInstance.NotifyAll('Referência: ' + AID + ' apagada com sucesso');
+            TLogSubject.GetInstance.NotifyAll('ReferÃªncia: ' + AID + ' apagada com sucesso');
             exit;
           end;
 
@@ -872,7 +877,7 @@ begin
         except
           on E: Exception do
           begin
-            TLogSubject.GetInstance.NotifyAll('Não foi possível excluir o produto' + #13#10 +
+            TLogSubject.GetInstance.NotifyAll('NÃ£o foi possÃ­vel excluir o produto' + #13#10 +
               E.Message);
           end;
         end;
@@ -902,7 +907,8 @@ begin
   begin
     AObj := TJSONObject.ParseJSONValue(Response.Content) as TJSONObject;
     try
-      Result := AObj.GetValue<TJSONArray>('data')[0].GetValue<string>('id');
+      if AObj.GetValue<TJSONArray>('data').Count > 0 then
+        Result := AObj.GetValue<TJSONArray>('data')[0].GetValue<string>('id');
     finally
       AObj.Free;
     end;

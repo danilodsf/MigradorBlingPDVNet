@@ -31,10 +31,6 @@ type
     constructor Create(AConexao: IConexao; AConfigurador: IDAOConfiguracoesSQLite<TConfiguracao>);
   end;
 
-const
-  FILIAL_BLING = 5;
-  FILIAL_BLING_ID = '14888445055';
-
 implementation
 
 uses
@@ -112,7 +108,7 @@ begin
           TLogSubject.GetInstance.NotifyAll(E.Message);
       end;
 
-    end, 'Referências');
+    end, 'ReferÃªncias');
 end;
 
 function TDAOReferenciasSQLite.Ler(AID: string): TReferencia;
@@ -131,7 +127,7 @@ const
     'COLECAO_VINCULO_ID_BLING, GRUPO_VINCULO_ID_BLING, MATERIAL_VINCULO_ID_BLING, ' +
     'COR_VINCULO_ID_BLING, TAMANHO_VINCULO_ID_BLING, ' +
     '(select id_bling from CAMPOS_CUSTOMIZADOS where descricao = ''Departamento'') as CAMPO_DEPARTAMENTO, '
-    + '(select id_bling from CAMPOS_CUSTOMIZADOS where descricao = ''Coleção'') as CAMPO_COLECAO, '
+    + '(select id_bling from CAMPOS_CUSTOMIZADOS where descricao = ''ColeÃ§Ã£o'') as CAMPO_COLECAO, '
     + '(select id_bling from CAMPOS_CUSTOMIZADOS where descricao = ''Grupo'') as CAMPO_GRUPO, ' +
     '(select id_bling from CAMPOS_CUSTOMIZADOS where descricao = ''Material'') as CAMPO_MATERIAL, '
     + '(select id_bling from CAMPOS_CUSTOMIZADOS where descricao = ''Categoria'') as CAMPO_CATEGORIA, '
@@ -294,8 +290,8 @@ begin
             LSaldo := TSaldo.Create;
             LSaldo.Produto := LVariacao.ID;
             LSaldo.Produto_ID_Bling := LVariacao.ID_Bling;
-            LSaldo.Filial := FILIAL_BLING;
-            LSaldo.Filial_ID_Bling := FILIAL_BLING_ID;
+            LSaldo.Filial := StrToIntDef(GetEnvironmentVariable('BLING_FILIAL_PDVNET'), 0);
+            LSaldo.Filial_ID_Bling := GetEnvironmentVariable('BLING_DEPOSITO_ID');
             LSaldo.Saldo := AQuerySaldos.FieldByName('SAL_SALDO').AsFloat;
             LSaldo.Saldo := ifThen(LSaldo.Saldo <= 0, 0,
               LSaldo.Saldo - LConfiguracao.QtdEstoqueSubtrair);
@@ -384,7 +380,8 @@ begin
           LQueryImagens.ParamByName('PIMA_REFERENCIA').AsString := LReferencia.Referencia;
           LQueryImagens.ParamByName('PIMA_SEQ').AsInteger := LReferenciaImagem.Seq;
           LQueryImagens.ParamByName('PIMA_URL').AsString :=
-            TUploadImagem.Subir(LReferencia.Referencia, LReferenciaImagem.Imagem);
+            TUploadImagem.Subir(LReferencia.Referencia, LReferenciaImagem.Imagem,
+            LReferenciaImagem.Seq);
           LQueryImagens.ExecSQL;
         end;
       end;
@@ -392,7 +389,7 @@ begin
     procedure(LReferencia: TReferencia; AIndex: Integer; AQuery: IQuery)
     begin
       AQuery.ParamByName('PREF_REFERENCIA').AsStrings(AIndex, LReferencia.Referencia);
-    end, 'Referências');
+    end, 'ReferÃªncias');
 end;
 
 end.

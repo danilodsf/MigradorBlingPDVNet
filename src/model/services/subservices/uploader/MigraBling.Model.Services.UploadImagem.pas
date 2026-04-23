@@ -5,43 +5,53 @@ interface
 uses
   System.Classes,
   RESTRequest4D,
+  StrUtils,
+  SysUtils,
   System.JSON;
 
 type
   TUploadImagem = class
   private
   public
-    class function Subir(AReferencia: string; AStream: TStream): string;
+    class function Subir(AReferencia: string; AStream: TStream; ASeq: integer): string;
   end;
-
-const
-  C_BASEURL_IMAGENS = 'https://samiraadm.com.br/uploads_api/api.php';
 
 implementation
 
 { TUploadImagem }
 
-class function TUploadImagem.Subir(AReferencia: string; AStream: TStream): string;
+class function TUploadImagem.Subir(AReferencia: string; AStream: TStream; ASeq: integer): string;
 var
   Response: IResponse;
-  Json: TJSONObject;
+  JSON: TJSONObject;
+  LURL, LToken: string;
 begin
   result := '';
 
-  Response := TRequest.New.BaseURL(C_BASEURL_IMAGENS)
-    .AddHeader('X-API-TOKEN', 'SINCRONIZADOR_9fA7Kx2QmP8LwR6C')
-    .AddField('produto_id',AReferencia)
-    .AddFile('file',AStream)
-    .Post;
+  LURL := GetEnvironmentVariable('UPLOAD_API_URL');
+  if LURL.IsEmpty then
+    Exit;
+
+  LToken := GetEnvironmentVariable('UPLOAD_API_TOKEN');
+  if LToken.IsEmpty then
+    Exit;
+
+  if ASeq > 1 then
+    AReferencia := AReferencia + '_' + ASeq.ToString;
+
+  Response := TRequest.New.BaseURL(LURL).AddHeader('X-API-TOKEN', LToken)
+    .AddField('produto_id', AReferencia).AddFile('file', AStream).Post;
 
   if Response.StatusCode <> 200 then
     exit;
 
-  Json := TJSONObject.ParseJSONValue(Response.Content) as TJSONObject;
+  JSON := TJSONObject.ParseJSONValue(Response.Content) as TJSONObject;
+  if not Assigned(JSON) then
+    Exit;
   try
-    Json.TryGetValue<string>('url', Result);
+    JSON.TryGetValue<string>('url', result);
   finally
-    Json.Free;
+    JSON.Free;
   end;
 end;
 

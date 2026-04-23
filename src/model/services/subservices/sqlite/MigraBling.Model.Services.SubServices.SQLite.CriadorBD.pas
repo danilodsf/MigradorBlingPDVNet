@@ -1,4 +1,4 @@
-unit MigraBling.Model.Services.SubServices.SQLite.CriadorBD;
+﻿unit MigraBling.Model.Services.SubServices.SQLite.CriadorBD;
 
 interface
 
@@ -30,6 +30,7 @@ type
     class procedure tabVersao(AQuery: IQuery);
 
     class procedure AtualizarVersao_1(AQuery: IQuery);
+    class procedure AtualizarVersao_2(AQuery: IQuery);
   public
     class procedure CriarBancoDeDados(AConexao: IConexao);
     class procedure AtualizarBancoDeDados(AConexao: IConexao);
@@ -58,13 +59,6 @@ begin
     AQuery.SQL.Text := 'ALTER TABLE "CONFIGURACOES" ADD "IMAGENS_DATABASE"	TEXT';
     AQuery.ExecSQL;
 
-    { Setar nome do banco auxiliar PDVNET }
-    AQuery.Close;
-    AQuery.SQL.Clear;
-    AQuery.SQL.Text := 'UPDATE "CONFIGURACOES" ' +
-      'SET IMAGENS_DATABASE = ''BDMATRIZSPLIT_AUXILIAR''';
-    AQuery.ExecSQL;
-
     { Dropar tabela Versao para recriar com a PK }
     AQuery.Close;
     AQuery.SQL.Clear;
@@ -77,7 +71,7 @@ begin
     AQuery.SQL.Text := 'CREATE TABLE "VERSAO" ("NUMERO"	INTEGER, PRIMARY KEY("NUMERO"))';
     AQuery.ExecSQL;
 
-    { Atualizar numero da vers�o }
+    { Atualizar numero da versão }
     AQuery.SQL.Clear;
     AQuery.SQL.Text := 'INSERT INTO VERSAO (NUMERO) VALUES (1) ' +
       'ON CONFLICT(NUMERO) DO UPDATE SET NUMERO = excluded.NUMERO';
@@ -100,13 +94,39 @@ var
 begin
   AConexao.Open;
   FQuery := TQueryFactory.New.GetQuery(AConexao);
-  FQuery.SQL.Clear;
-  FQuery.SQL.Text := 'SELECT NUMERO FROM VERSAO';
+  FQuery.SQL.Text := 'SELECT MAX(NUMERO) AS NUMERO FROM VERSAO';
   FQuery.Open;
   FVersaoAtual := FQuery.FieldByName('NUMERO').AsInteger;
+  FQuery.Close;
 
-  if FVersaoAtual = 0 then
+  if FVersaoAtual < 1 then
     AtualizarVersao_1(FQuery);
+
+  if FVersaoAtual < 2 then
+    AtualizarVersao_2(FQuery);
+end;
+
+class procedure TCriadorBD.AtualizarVersao_2(AQuery: IQuery);
+begin
+  try
+    AQuery.Connection.StartTransaction;
+
+    { Adicionar campo Marca em CONFIGURACOES }
+    AQuery.SQL.Text := 'ALTER TABLE "CONFIGURACOES" ADD "MARCA" TEXT DEFAULT ';
+    AQuery.ExecSQL;
+
+    { Atualizar numero da versao }
+    AQuery.SQL.Text := 'UPDATE VERSAO SET NUMERO = 2';
+    AQuery.ExecSQL;
+
+    AQuery.Connection.Commit;
+  except
+    on E: Exception do
+    begin
+      AQuery.Connection.Rollback;
+      raise Exception.Create(E.Message);
+    end;
+  end;
 end;
 
 class procedure TCriadorBD.CriarBancoDeDados(AConexao: IConexao);
@@ -186,7 +206,7 @@ begin
   AQuery.SQL.Add('"ATIVAR"	INTEGER,');
   AQuery.SQL.Add('"QTD_ESTOQUE_SUBIR"	INTEGER,');
   AQuery.SQL.Add('"DT_ULTIMA_CONSULTA_HOOKDECK"	TEXT,');
-  AQuery.SQL.Add('"TABELA_PRECO_PADRAO"	INTEGER DEFAULT 29,');
+  AQuery.SQL.Add('"TABELA_PRECO_PADRAO"	INTEGER DEFAULT 0,');
   AQuery.SQL.Add('"PASTA_BACKUP"	TEXT)');
   AQuery.ExecSQL;
 end;
