@@ -53,8 +53,8 @@ end;
 
 procedure TDAOSaldosBling.Criar(AObj: TSaldo);
 begin
-  if (AObj.DesconsiderarEstoque) or (AObj.Produto_ID_Bling = '') or
-    ((AObj.Produto_ID_Bling = 'EXCLUIR')) then
+  if ((AObj.Produto_ID_Bling = '') or (AObj.Produto_ID_Bling = 'EXCLUIR') or
+    (AObj.ID_Bling = 'EXCLUIR')) then
   begin
     AObj.ID_Bling := 'EXCLUIR';
     exit;
@@ -88,8 +88,11 @@ begin
           end;
 
           errorResponse := TJSON.JsonToObject<TResponseError>(Response.Content);
-          raise Exception.Create(errorResponse.error.message + ' - ' +
-            errorResponse.error.description + ' - ' + 'Estoques' + '. ' + errorResponse.allErrors);
+          if Assigned(errorResponse.error) then
+            raise Exception.Create(errorResponse.error.message + ' ' + 'Estoques' + '. ' +
+              errorResponse.allErrors)
+          else
+            raise Exception.Create(Response.Content);
         except
           on E: Exception do
           begin

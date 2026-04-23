@@ -82,3 +82,14 @@ modules/
 
 # SQLite Database
 *.db
+bin/db/
+
+# Logs e arquivos de debug gerados em runtime
+bin/*.txt
+bin/*.log
+bin/*.json
+
+# Saídas dos code reviews (podem conter trechos de código sensível)
+tools/code-review/runs/
+tools/code-review/runs_remote/
+tools/code-review/runs_remote_aws/

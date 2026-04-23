@@ -17,7 +17,8 @@ uses
 type
   TDAOCoresSQLite = class(TDaoSQLite, IDAOTabelasSQLite<TCor>)
   public
-    function Ler: TObjectList<TCor>;
+    function Ler: TObjectList<TCor>; overload;
+    function Ler(AID: string): TCor; overload;
     procedure Persistir(AListObj: TObjectList<TCor>);
     procedure GravarIDsBling(AListObj: TObjectList<TCor>);
     constructor Create(AConexao: IConexao);
@@ -48,6 +49,11 @@ begin
     begin
       AQuery.ParamByName('PID_BLING').AsString := ACor.ID_CampoCustomizavel;
     end, 'Cores');
+end;
+
+function TDAOCoresSQLite.Ler(AID: string): TCor;
+begin
+  Result := nil;
 end;
 
 function TDAOCoresSQLite.Ler: TObjectList<TCor>;

@@ -18,7 +18,8 @@ type
   private
     FConfigurador: IDAOConfiguracoesSQLite<TConfiguracao>;
   public
-    function Ler: TObjectList<TMovimentoEstoque>;
+    function Ler: TObjectList<TMovimentoEstoque>; overload;
+    function Ler(AID: string): TMovimentoEstoque; overload;
     procedure Persistir(AListObj: TObjectList<TMovimentoEstoque>);
     procedure GravarIDsBling(AListObj: TObjectList<TMovimentoEstoque>);
     constructor Create(AConexao: IConexao; AConfigurador: IDAOConfiguracoesSQLite<TConfiguracao>);
@@ -37,6 +38,11 @@ end;
 
 procedure TDAOVendasSQLite.GravarIDsBling(AListObj: TObjectList<TMovimentoEstoque>);
 begin
+end;
+
+function TDAOVendasSQLite.Ler(AID: string): TMovimentoEstoque;
+begin
+  Result := nil;
 end;
 
 function TDAOVendasSQLite.Ler: TObjectList<TMovimentoEstoque>;

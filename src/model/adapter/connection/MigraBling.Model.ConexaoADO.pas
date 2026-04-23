@@ -8,7 +8,9 @@ uses
   Data.DB,
   System.Classes,
   Winapi.ActiveX,
-  System.Win.ComObj, Vcl.Dialogs;
+  System.Win.ComObj,
+  Vcl.Dialogs,
+  MigraBling.Audio;
 
 type
   TConexaoADO = class(TInterfacedObject, IConexao)
@@ -17,6 +19,7 @@ type
     FBaseConectada: string;
     FParams: TStringList;
     FCoInitialized: Boolean;
+    FUsarBaseAuxiliar: Boolean;
     function GetParams: TStrings;
     procedure SetParams(AValue: TStrings);
     function GetConnected: Boolean;
@@ -26,7 +29,7 @@ type
     function GetBaseConectada: string;
     procedure SetBaseConectada(AValue: string);
   public
-    constructor Create;
+    constructor Create(AUsarBaseAuxiliar: Boolean = false);
     destructor Destroy; override;
     property Params: TStrings read GetParams write SetParams;
     property Connected: Boolean read GetConnected write SetConnected;
@@ -50,6 +53,9 @@ uses
 
 function TConexaoADO.Clone: IConexao;
 begin
+  if Self.Params.Values['Database'] = '' then
+    exit;
+
   Result := TConexaoADO.Create;
   Result.Params.Text := Self.Params.Text;
   Result.BaseConectada := Self.FBaseConectada;
@@ -66,15 +72,16 @@ begin
   FConnection.CommitTrans;
 end;
 
-constructor TConexaoADO.Create;
+constructor TConexaoADO.Create(AUsarBaseAuxiliar: Boolean);
 var
   hr: HResult;
 begin
+  FUsarBaseAuxiliar := AUsarBaseAuxiliar;
   hr := CoInitializeEx(nil, COINIT_APARTMENTTHREADED);
   FCoInitialized := hr = S_OK;
 
   FConnection := TADOConnection.Create(nil);
-  FConnection.LoginPrompt := False;
+  FConnection.LoginPrompt := false;
   FParams := TStringList.Create;
 end;
 
@@ -138,8 +145,8 @@ begin
   LUserName := FParams.Values['User_Name'];
   LPassword := FParams.Values['Password'];
 
-  LConnStr := 'Provider=MSOLEDBSQL19;PWD=' + LPassword +
-    ';UID=' + LUserName + ';Database=BDMATRIZSPLIT;Server=' + LServer +
+  LConnStr := 'Provider=MSOLEDBSQL19;PWD=' + LPassword + ';UID=' + LUserName + ';Database=' +
+    LDataBase + ';Server=' + LServer +
     ';Use Encryption for Data=Optional;MultipleActiveResultSets=True;';
 
   FConnection.ConnectionString := LConnStr;
@@ -147,7 +154,10 @@ begin
     FConnection.Connected := AValue;
   except
     on e: Exception do
-      raise Exception.Create(E.message + sLineBreak + FConnection.ConnectionString);
+    begin
+      TNotificador.NotificarFalhaConexaoSQLServer;
+      raise Exception.Create(e.message + sLineBreak + FConnection.ConnectionString);
+    end;
   end;
 end;
 

@@ -21,6 +21,7 @@ uses
   MigraBling.Model.Interfaces.Conexao,
   MigraBling.Model.Interfaces.Query,
   MigraBling.Model.QueryParamFireDAC;
+
 type
   TQueryFireDAC = class(TInterfacedObject, IQuery)
   private
@@ -42,7 +43,7 @@ type
     procedure Open;
     procedure Next;
     procedure ExecSQL;
-    procedure Execute(AValue: integer);
+    procedure Execute(AValue: Integer);
 
     property IsEmpty: Boolean read GetIsEmpty;
     property EOF: Boolean read GetEOF;
@@ -83,7 +84,7 @@ begin
   FQuery.ExecSQL;
 end;
 
-procedure TQueryFireDAC.Execute(AValue: integer);
+procedure TQueryFireDAC.Execute(AValue: Integer);
 begin
   FQuery.Execute(AValue);
 end;
@@ -100,7 +101,7 @@ end;
 
 function TQueryFireDAC.GetEOF: Boolean;
 begin
-  Result := FQuery.Eof;
+  Result := FQuery.EOF;
 end;
 
 function TQueryFireDAC.GetIsEmpty: Boolean;

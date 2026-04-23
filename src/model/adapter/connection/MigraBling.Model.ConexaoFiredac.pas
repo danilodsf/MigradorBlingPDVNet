@@ -17,10 +17,10 @@ uses
   FireDAC.Stan.Pool,
   FireDAC.Stan.Async,
   FireDAC.Phys,
-  {$IFDEF USE_FD_MSSQL}
+{$IFDEF USE_FD_MSSQL}
   FireDAC.Phys.MSSQL,
   FireDAC.Phys.MSSQLDef,
-  {$ENDIF}
+{$ENDIF}
   FireDAC.VCLUI.Wait,
   FireDAC.Comp.Client,
   FireDAC.Stan.Param,
@@ -31,7 +31,7 @@ uses
   FireDAC.Phys.SQLite,
   FireDAC.Phys.SQLiteDef,
   FireDAC.Stan.ExprFuncs,
-  FireDAC.Phys.SQLiteWrapper.Stat;
+  FireDAC.Phys.SQLiteWrapper.Stat, MigraBling.Audio;
 
 type
   TConexaoFireDAC = class(TInterfacedObject, IConexao)
@@ -137,7 +137,7 @@ end;
 
 procedure TConexaoFireDAC.SetDateTimeFormat(AValue: string);
 begin
-  FConnection.FormatOptions.FmtDisplayDateTime := 'yyyy-mm-dd hh:nn:ss';
+  FConnection.FormatOptions.FmtDisplayDateTime := AValue;
 end;
 
 function TConexaoFireDAC.GetInstance: TCustomConnection;
@@ -169,10 +169,21 @@ procedure TConexaoFireDAC.SetConnected(AValue: Boolean);
 begin
   if FConnection.ActualDriverID = 'SQLite' then
   begin
-    FConnection.FormatOptions.OwnMapRules := True;
+    FConnection.FormatOptions.OwnMapRules := true;
     FConnection.FormatOptions.MapRules.Add(dtInt64, dtFmtBCD);
   end;
-  FConnection.Connected := AValue;
+
+  if AValue then
+  begin
+    try
+      FConnection.Connected := AValue;
+    except
+      TNotificador.NotificarFalhaConexaoSQLServer;
+    end;
+  end
+  else
+    FConnection.Connected := AValue;
+
 end;
 
 procedure TConexaoFireDAC.SetParams(AValue: TStrings);

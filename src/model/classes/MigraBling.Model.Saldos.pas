@@ -16,7 +16,6 @@ type
     FSaldo: Double;
     FTipoReg: string;
     FExcluido: Boolean;
-    FDesconsiderarEstoque: Boolean;
   public
     property ID: string read FID write FID;
     property Produto: string read FProduto write FProduto;
@@ -26,7 +25,6 @@ type
     property Saldo: Double read FSaldo write FSaldo;
     property TipoReg: string read FTipoReg write FTipoReg;
     property Excluido: Boolean read FExcluido write FExcluido;
-    property DesconsiderarEstoque: Boolean read FDesconsiderarEstoque write FDesconsiderarEstoque;
   end;
 
 implementation

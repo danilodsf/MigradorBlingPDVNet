@@ -10,37 +10,45 @@ uses
   MigraBling.Model.QueryFactory,
   System.Generics.Collections,
   System.SysUtils,
-  MigraBling.Model.LogObserver, MigraBling.Model.AppControl;
+  MigraBling.Model.LogObserver, MigraBling.Model.AppControl,
+  MigraBling.Model.Variacoes, Data.DB, MigraBling.Model.ReferenciasImagens;
 
 type
   TDAOReferenciasPDVNET = class(TInterfacedObject, IDAOTabelasPDVNET<TReferencia>)
   private
     FConexao: IConexao;
+    FConexaoImagens: IConexao;
+    FVariacoes: IDAOTabelasPDVNETDependencia<TVariacao>;
   public
-    function Ler: TObjectList<TReferencia>;
-    constructor Create(AConexao: IConexao);
+    function Ler: TObjectList<TReferencia>; overload;
+    constructor Create(AConexao: IConexao; AConexaoImagens: IConexao);
   end;
 
 implementation
 
+uses
+  MigraBling.Model.Services.SubServices.PDVNET.DAOVariacoes;
+
 { TDAOReferenciasPDVNET }
 
-constructor TDAOReferenciasPDVNET.Create(AConexao: IConexao);
+constructor TDAOReferenciasPDVNET.Create(AConexao: IConexao; AConexaoImagens: IConexao);
 begin
   FConexao := AConexao;
+  FConexaoImagens := AConexaoImagens;
+  FVariacoes := TDAOVariacoesPDVNET.Create(FConexao, FConexaoImagens);
 end;
 
 function TDAOReferenciasPDVNET.Ler: TObjectList<TReferencia>;
 var
   LReferencia: TReferencia;
-  LQuery, LQuery2: IQuery;
+  LQuery, LQueryImagens: IQuery;
+  LVariacoes: TObjectList<TVariacao>;
+  LReferenciaImagem: TReferenciaImagem;
 begin
   LQuery := TQueryFactory.New.GetQuery(FConexao.Clone);
-  LQuery2 := TQueryFactory.New.GetQuery(FConexao.Clone);
 
-  LQuery2.Close;
-  LQuery2.SQL.Text := 'SELECT MAT_CODIGO, MAT_COR, MAT_TAMANHO, MAT_INATIVO ' + 'FROM MATERIAIS ' +
-    'WHERE MAT_REFERENCIA = :PMAT_REFERENCIA ';
+  if Assigned(FConexaoImagens) then
+    LQueryImagens := TQueryFactory.New.GetQuery(FConexaoImagens.Clone);
 
   Result := TObjectList<TReferencia>.Create;
   LQuery.Close;
@@ -53,6 +61,14 @@ begin
     + 'LEFT JOIN NCM on (REF_NCM = NCM_CODIGO) LEFT JOIN UNIDADES on (REF_UNIDADE2 = UNI_CODIGO) ' +
     'WHERE MMB.TABELA = ''REFERENCIAS'' ';
   LQuery.Open;
+
+  if Assigned(FConexaoImagens) then
+  begin
+    LQueryImagens.Close;
+    LQueryImagens.SQL.Text := 'select IMA_SEQ, IMA_IMAGEM from IMAGEM ' +
+      'WHERE IMA_CODIGO = :pIMA_CODIGO AND IMA_IMAGEM IS NOT NULL ORDER BY IMA_SEQ';
+  end;
+
   while not LQuery.EOF do
   begin
     if TAppControl.AppFinalizando then
@@ -78,6 +94,31 @@ begin
     LReferencia.Unidade := LQuery.FieldByName('UNI_DESCRICAO').AsString;
     LReferencia.Inativo := LQuery.FieldByName('REF_INATIVO2').AsBoolean;
     LReferencia.TipoReg := LQuery.FieldByName('TIPO').AsString;
+
+    if Assigned(FConexaoImagens) then
+    begin
+      LQueryImagens.Close;
+      LQueryImagens.ParamByName('pIMA_CODIGO').AsString := LReferencia.Referencia;
+      LQueryImagens.Open;
+
+      while not LQueryImagens.EOF do
+      begin
+        LReferenciaImagem := TReferenciaImagem.Create;
+        LReferenciaImagem.Seq := LQueryImagens.FieldByName('IMA_SEQ').AsInteger;
+        TBlobField(LQueryImagens.FieldByName('IMA_IMAGEM')).SaveToStream(LReferenciaImagem.Imagem);
+        LReferenciaImagem.Imagem.Position := 0;
+        LReferencia.Imagens.Add(LReferenciaImagem);
+        LQueryImagens.Next;
+      end;
+    end;
+
+    LVariacoes := FVariacoes.Ler(LReferencia.Referencia);
+    try
+      while LVariacoes.Count > 0 do
+        LReferencia.Variacoes.Add(LVariacoes.Extract(LVariacoes.Last));
+    finally
+      LVariacoes.Free;
+    end;
 
     Result.Add(LReferencia);
     LQuery.Next;

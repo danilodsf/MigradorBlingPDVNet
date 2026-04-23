@@ -15,6 +15,7 @@ type
     FClientSecret: string;
     FPDVNET_Server: string;
     FPDVNET_Database: string;
+    FImagens_Database: string;
     FPDVNET_UserName: string;
     FPDVNET_Password: string;
     FTempoSincronizacao: integer;
@@ -31,6 +32,7 @@ type
     property ClientSecret: string read FClientSecret write FClientSecret;
     property PDVNET_Server: string read FPDVNET_Server write FPDVNET_Server;
     property PDVNET_Database: string read FPDVNET_Database write FPDVNET_Database;
+    property Imagens_Database: string read FImagens_Database write FImagens_Database;
     property PDVNET_UserName: string read FPDVNET_UserName write FPDVNET_UserName;
     property PDVNET_Password: string read FPDVNET_Password write FPDVNET_Password;
     property TempoSincronizacao: integer read FTempoSincronizacao write FTempoSincronizacao;

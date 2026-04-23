@@ -4,7 +4,7 @@ interface
 
 uses
   System.Classes, System.SyncObjs, System.Generics.Collections, System.Threading,
-  System.SysUtils;
+  System.SysUtils, MigraBling.Model.LogObserver;
 
 type
   TAppControl = class
@@ -151,7 +151,12 @@ begin
     begin
       try
         if TAppControl.AppFinalizando then Exit;
-        Proc();
+        try
+          Proc();
+        except
+          on e: Exception do
+            TLogSubject.GetInstance.NotifyAll(E.Message);
+        end;
       finally
         TAppControl.UnregisterTask(TTask.CurrentTask);
       end;

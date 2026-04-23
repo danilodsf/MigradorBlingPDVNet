@@ -101,7 +101,8 @@ end;
 
 procedure TADOParamWrapper.EnsureSize(ASize: Integer);
 begin
-  if ASize <= 0 then Exit;
+  if ASize <= 0 then
+    Exit;
   while FArrayValues.Count < ASize do
     FArrayValues.Add(Null);
 end;

@@ -17,7 +17,8 @@ uses
 type
   TDAOMateriaisSQLite = class(TDaoSQLite, IDAOTabelasSQLite<TMaterial>)
   public
-    function Ler: TObjectList<TMaterial>;
+    function Ler: TObjectList<TMaterial>; overload;
+    function Ler(AID: string): TMaterial; overload;
     procedure Persistir(AListObj: TObjectList<TMaterial>);
     procedure GravarIDsBling(AListObj: TObjectList<TMaterial>);
     constructor Create(AConexao: IConexao);
@@ -48,6 +49,11 @@ begin
     begin
       AQuery.ParamByName('PID_BLING').AsString := AMaterial.ID_CampoCustomizavel;
     end, 'Materiais');
+end;
+
+function TDAOMateriaisSQLite.Ler(AID: string): TMaterial;
+begin
+  Result := nil;
 end;
 
 function TDAOMateriaisSQLite.Ler: TObjectList<TMaterial>;

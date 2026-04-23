@@ -5,6 +5,7 @@ interface
 uses
   MigraBling.Model.Services.SubServices.PDVNET.DAOCategorias,
   MigraBling.Model.Interfaces.DAO, MigraBling.Model.Categorias,
+  MigraBling.Model.Referencias,
   MigraBling.Model.Services.SubServices.Interfaces.RegistrosMovimentados,
   System.Generics.Collections;
 
@@ -21,6 +22,8 @@ type
     procedure DestruirObjetos;
     function BuscarFiliais: TDictionary<integer, string>;
     function BuscarTabelasDePreco: TOrderedDictionary<integer, string>;
+    function BuscarReferencias: TObjectList<TReferencia>;
+    procedure SincronizarReferencias(AReferencias: TList<string>);
   end;
 
 implementation

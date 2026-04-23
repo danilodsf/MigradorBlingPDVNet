@@ -49,6 +49,7 @@ type
   TPDVNETRegistrosMovimentados = class(TInterfacedObject, IRegistrosMovimentados)
   private
     FConexao: IConexao;
+    FConexaoImagens: IConexao;
     FMovimentos: IDAOMovimentosPDVNET<TMovimento>;
     FCategorias: IDAOTabelasPDVNET<TCategoria>;
     FDepartamentos: IDAOTabelasPDVNET<TDepartamento>;
@@ -97,7 +98,8 @@ type
     procedure Apagar(ATabelaExcluir: TMapaEntidade);
     procedure Limpar<T: TBaseModel>(AListObj: TObjectList<T>; ATabela, ADescricao: string);
   public
-    constructor Create(AConexao: IConexao; var AConfigurador: ISQLiteService);
+    constructor Create(AConexao: IConexao; AConexaoImagens: IConexao;
+      var AConfigurador: ISQLiteService);
     property BuscarCategorias: TObjectList<TCategoria> read GetBuscarCategorias;
     property BuscarDepartamentos: TObjectList<TDepartamento> read GetBuscarDepartamentos;
     property BuscarColecoes: TObjectList<TColecao> read GetBuscarColecoes;
@@ -127,10 +129,11 @@ uses
 
 { TPDVNETRegistrosMovimentados }
 
-constructor TPDVNETRegistrosMovimentados.Create(AConexao: IConexao;
+constructor TPDVNETRegistrosMovimentados.Create(AConexao: IConexao; AConexaoImagens: IConexao;
   var AConfigurador: ISQLiteService);
 begin
   FConexao := AConexao;
+  FConexaoImagens := AConexaoImagens;
   FCategorias := TDAOCategoriasPDVNET.Create(FConexao);
   FDepartamentos := TDAODepartamentosPDVNET.Create(FConexao);
   FMovimentos := TDAOMovimentosPDVNET.Create(FConexao);
@@ -142,9 +145,9 @@ begin
   FFiliais := TDAOFiliaisPDVNET.Create(FConexao);
   FTabelaPrecos := TDAOTabelaPrecosPDVNET.Create(FConexao);
   FPrecos := TDAOPrecosPDVNET.Create(FConexao, AConfigurador);
-  FVariacoes := TDAOVariacoesPDVNET.Create(FConexao);
-  FReferencias := TDAOReferenciasPDVNET.Create(FConexao);
-  FSaldos := TDAOSaldosPDVNET.Create(FConexao, AConfigurador);
+  FVariacoes := TDAOVariacoesPDVNET.Create(FConexao, FConexaoImagens);
+  FReferencias := TDAOReferenciasPDVNET.Create(FConexao, FConexaoImagens);
+  FSaldos := TDAOSaldosPDVNET.Create(FConexao);
 end;
 
 procedure TPDVNETRegistrosMovimentados.DestruirObjetos;

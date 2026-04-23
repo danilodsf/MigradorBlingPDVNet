@@ -14,8 +14,13 @@ function getDataSQLite(AValue: string): TDateTime;
 function setDataSQLite(AValue: TDateTime): string;
 function TextoParaHTML(const ATexto: string): string;
 function GetEnv(const AName: string): string;
+function ExtrairTextoEntre(const Texto, PalavraInicio, PalavraFim: string): string;
+procedure GravarLogTeste(ATexto: string);
 
 implementation
+
+uses
+  System.Classes;
 
 function getAppDir: string;
 begin
@@ -86,6 +91,41 @@ end;
 function GetEnv(const AName: string): string;
 begin
   result := GetEnvironmentVariable(AName);
+end;
+
+function ExtrairTextoEntre(const Texto, PalavraInicio, PalavraFim: string): string;
+var
+  PInicio, PFim: Integer;
+begin
+  result := '';
+  PInicio := Pos(PalavraInicio, Texto);
+  if PInicio > 0 then
+  begin
+    // Pular a palavra de início
+    Inc(PInicio, Length(PalavraInicio));
+
+    PFim := Pos(PalavraFim, copy(Texto, PInicio, MaxInt));
+    if PFim > 0 then
+      result := copy(Texto, PInicio, PFim - 1);
+  end;
+end;
+
+procedure GravarLogTeste(ATexto: string);
+var
+  Txt: TStrings;
+begin
+  Txt := TStringList.Create;
+  try
+    try
+      Txt.Text := ATexto;
+      Txt.SaveToFile('json.json');
+    except
+      on E: Exception do
+        raise Exception.Create(E.Message);
+    end;
+  finally
+    Txt.Free;
+  end;
 end;
 
 end.

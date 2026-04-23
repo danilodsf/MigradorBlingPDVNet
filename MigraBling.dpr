@@ -108,7 +108,12 @@ uses
   MigraBling.Model.ConexaoProvider in 'src\model\classes\MigraBling.Model.ConexaoProvider.pas',
   MigraBling.Model.QueryADO in 'src\model\adapter\query\MigraBling.Model.QueryADO.pas',
   MigraBling.Model.QueryParamADO in 'src\model\adapter\query\MigraBling.Model.QueryParamADO.pas',
-  MigraBling.Model.Interfaces.QueryParamArraySource in 'src\model\adapter\query\interfaces\MigraBling.Model.Interfaces.QueryParamArraySource.pas';
+  MigraBling.Model.Interfaces.QueryParamArraySource in 'src\model\adapter\query\interfaces\MigraBling.Model.Interfaces.QueryParamArraySource.pas',
+  MigraBling.View.SincronizarReferencia in 'src\view\MigraBling.View.SincronizarReferencia.pas' {FrmSincReferencia},
+  MigraBling.Model.ReferenciasImagens in 'src\model\classes\MigraBling.Model.ReferenciasImagens.pas',
+  MigraBling.Model.Services.UploadImagem in 'src\model\services\subservices\uploader\MigraBling.Model.Services.UploadImagem.pas',
+  MigraBling.Audio in 'src\model\utils\MigraBling.Audio.pas',
+  MigraBling.View.AlertaToken in 'src\view\MigraBling.View.AlertaToken.pas' {FrmAlertaToken};
 
 {$R *.res}
 

@@ -11,6 +11,11 @@ type
     function Ler: TObjectList<T>;
   end;
 
+  IDAOTabelasPDVNETDependencia<T: class> = interface
+    ['{3CAF39EF-DC06-461C-A690-9D267F496206}']
+    function Ler(AID: string = ''): TObjectList<T>;
+  end;
+
   IDAOMovimentosPDVNET<T: class> = interface
     ['{2A88EFEB-CFAA-42E1-801E-8144B3F55E01}']
     function Ler: TObjectList<T>;

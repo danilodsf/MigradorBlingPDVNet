@@ -19,6 +19,7 @@ uses
   MigraBling.Model.Interfaces.LogSubject,
   MigraBling.Model.Services.Backup,
   MigraBling.Model.MovimentoEstoque,
+  MigraBling.Model.Referencias,
   MigraBling.Model.Log,
   MigraBling.Model.AppControl;
 
@@ -74,6 +75,8 @@ type
     function TestarConexaoSQLServer: Boolean;
     function BuscarFiliais: TDictionary<integer, TFilial>;
     function BuscarTabelasDePreco: TOrderedDictionary<integer, string>;
+    function BuscarReferencias: TObjectList<TReferencia>;
+    procedure SincronizarReferencias(AReferencias: TList<string>);
     procedure Notify(const AValue: string);
   end;
 
@@ -152,6 +155,14 @@ procedure TSincronizadorController.SincronizarAgora;
 begin
   Notify('Sincronização manual');
   Sincronizar;
+end;
+
+procedure TSincronizadorController.SincronizarReferencias(AReferencias: TList<string>);
+begin
+  if not FSincronizador.PDVNET.TestarConexaoSQLServer then
+    Exit;
+
+  FSincronizador.PDVNET.SincronizarReferencias(AReferencias);
 end;
 
 function TSincronizadorController.TestarConexaoSQLServer: Boolean;
@@ -385,6 +396,16 @@ begin
   finally
     FSincronizador.SQLite.DestruirObjetos;
   end;
+end;
+
+function TSincronizadorController.BuscarReferencias: TObjectList<TReferencia>;
+begin
+  Result := nil;
+
+  if not FSincronizador.PDVNET.TestarConexaoSQLServer then
+    Exit;
+
+  Result := FSincronizador.PDVNET.BuscarReferencias;
 end;
 
 end.

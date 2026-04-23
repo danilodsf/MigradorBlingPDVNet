@@ -6,7 +6,8 @@ uses
   System.SysUtils,
   System.Classes,
   System.Generics.Collections,
-  MigraBling.Model.Filiais;
+  MigraBling.Model.Filiais,
+  MigraBling.Model.Referencias;
 
 type
   ISincronizadorController = interface
@@ -32,6 +33,8 @@ type
     procedure GravarConfigFiliaisEstoque(AValue: TDictionary<integer, Boolean>);
     function BuscarFiliais: TDictionary<integer, TFilial>;
     function BuscarTabelasDePreco: TOrderedDictionary<integer, string>;
+    function BuscarReferencias: TObjectList<TReferencia>;
+    procedure SincronizarReferencias(AReferencias: TList<string>);
     property ProcStatusServidor: TProc<Boolean> write SetProcStatusServidor;
     property ProcStatusSincronizador: TProc<Boolean> write SetProcStatusSincronizador;
     property ProcGravaLog: TProc<String> write SetProcGravaLog;

@@ -3,7 +3,11 @@ unit MigraBling.Model.Variacoes;
 interface
 
 uses
-  MigraBling.Model.BaseModel;
+  MigraBling.Model.BaseModel,
+  MigraBling.Model.Saldos,
+  System.Generics.Collections,
+  System.Classes,
+  MigraBling.Model.ReferenciasImagens;
 
 type
   TVariacao = class(TBaseModel)
@@ -24,6 +28,10 @@ type
     FTipoReg: string;
     FExcluido: Boolean;
     FExibir: boolean;
+    FOrdem: integer;
+    FSaldos: TObjectList<TSaldo>;
+    FImagens: TObjectList<TReferenciaImagem>;
+    FURLs: TList<string>;
   public
     property ID: string read FID write FID;
     property Referencia: string read FReferencia write FReferencia;
@@ -41,8 +49,32 @@ type
     property TipoReg: string read FTipoReg write FTipoReg;
     property Excluido: Boolean read FExcluido write FExcluido;
     property Exibir: Boolean read FExibir write FExibir;
+    property Ordem: integer read FOrdem write FOrdem;
+    property Saldos: TObjectList<TSaldo> read FSaldos write FSaldos;
+    property Imagens: TObjectList<TReferenciaImagem> read FImagens write FImagens;
+    property URLs: TList<string> read FURLs write FURLs;
+
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 implementation
+
+{ TVariacao }
+
+constructor TVariacao.Create;
+begin
+  FSaldos := TObjectList<TSaldo>.Create;
+  FImagens := TObjectList<TReferenciaImagem>.Create(true);
+  FURLs := TList<string>.Create;
+end;
+
+destructor TVariacao.Destroy;
+begin
+  FURLs.Free;
+  FImagens.Free;
+  FSaldos.Free;
+  inherited;
+end;
 
 end.
